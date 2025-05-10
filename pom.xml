@@ -98,6 +98,17 @@
             <version>0.11.5</version>
             <scope>runtime</scope>
         </dependency>
+        <dependency>
+            <groupId>com.azure.spring</groupId>
+            <artifactId>spring-cloud-azure-starter-active-directory</artifactId>
+            <version>4.6.0</version>
+        </dependency>
+		<!-- Add your dependencies here -->
+<dependency>
+    <groupId>com.azure</groupId>
+    <artifactId>azure-security-keyvault-secrets</artifactId>
+    <version>4.5.2</version> <!-- Use the latest stable version -->
+</dependency>
     </dependencies>
 
     <build>
