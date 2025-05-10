@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Your Fuel Quota QR Code</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: #f5f5f5;
+        }
+        .container {
+            width: 100%;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: white;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            border-radius: 5px;
+        }
+        .header {
+            background-color: #4CAF50;
+            color: white;
+            padding: 15px;
+            text-align: center;
+            border-radius: 5px 5px 0 0;
+            margin: -20px -20px 20px -20px;
+        }
+        .content {
+            padding: 0 20px;
+        }
+        .qr-container {
+            text-align: center;
+            margin: 30px 0;
+        }
+        .qr-image {
+            max-width: 300px;
+            height: auto;
+            border: 1px solid #ddd;
+            padding: 10px;
+        }
+        .instructions {
+            margin: 20px 0;
+            padding: 15px;
+            background-color: #f9f9f9;
+            border-left: 4px solid #4CAF50;
+        }
+        .download-button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            text-decoration: none;
+            display: inline-block;
+            border-radius: 5px;
+            margin-top: 20px;
+            cursor: pointer;
+            border: none;
+            font-size: 16px;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 12px;
+            color: #777;
+            border-top: 1px solid #eee;
+            padding-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Your Fuel Quota QR Code</h1>
+        </div>
+        
+        <div class="content">
+            <p>Congratulations! Your registration has been successfully completed. Below is your unique QR code for the Fuel Quota System:</p>
+            
+            <div class="qr-container">
+                <img id="qrCode" class="qr-image" th:src="${'data:image/png;base64,' + qrCode}" alt="Fuel Quota QR Code">
+            </div>
+            
+            <div class="instructions">
+                <h3>How to use your QR code:</h3>
+                <ol>
+                    <li>Save the QR code to your mobile phone or print it out</li>
+                    <li>Present this QR code at authorized fuel stations</li>
+                    <li>The attendant will scan your code to verify your quota</li>
+                    <li>You'll receive your allocated fuel amount based on your vehicle type</li>
+                </ol>
+            </div>
+            
+            <p><strong>Important:</strong> Keep this QR code safe and accessible. Don't share it with others as it's linked to your personal registration.</p>
+            
+            <div style="text-align: center;">
+                <button class="download-button" onclick="downloadQR()">Download QR Code</button>
+            </div>
+        </div>
+        
+        <div class="footer">
+            &copy; 2025 Fuel Quota Management System. All rights reserved.
+        </div>
+    </div>
+
+    <script>
+        function downloadQR() {
+            const qrImage = document.getElementById('qrCode');
+            const link = document.createElement('a');
+            link.href = qrImage.src;
+            link.download = 'fuel-quota-qr-code.png';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+    </script>
+</body>
+</html>
