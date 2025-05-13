@@ -18,8 +18,8 @@ public class OwnerRegistrationDto {
     @NotBlank(message = "Last name is required")
     private String lastName;
     
-    @NotBlank(message = "Email is required")
-    @Email(message = "Email should be valid")
+     @NotBlank(message = "Email is required")
+     @Email(message = "Email should be valid")
     private String email;
     
     @NotBlank(message = "Phone number is required")

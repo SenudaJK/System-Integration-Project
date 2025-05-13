@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.Optional;
 import java.util.Random;
 
 @Service
@@ -21,7 +22,7 @@ public class OtpService {
     @Value("${app.otp.expiration-minutes:5}")
     private int otpExpirationMinutes;
 
-    @Transactional
+    @Transactional 
     public void generateAndSendOtp(String email, OtpRecord.OtpPurpose purpose) {
         // Delete any existing OTP records for this email and purpose
         otpRepository.deleteByEmailAndPurpose(email, purpose);
@@ -42,16 +43,32 @@ public class OtpService {
         emailService.sendVerificationEmail(email, otp);
     }
 
-    @Transactional
+    @Transactional //verifying the otp after input
     public boolean verifyOtp(String email, String otp, OtpRecord.OtpPurpose purpose) {
-        return otpRepository.findByEmailAndOtpAndPurposeAndVerifiedFalse(email, otp, purpose)
-                .filter(record -> !record.isExpired())
-                .map(record -> {
-                    record.setVerified(true);
-                    otpRepository.save(record);
-                    return true;
-                })
-                .orElse(false);
+        // Fetch the OTP record for the given email and purpose
+        Optional<OtpRecord> otpRecordOptional = otpRepository.findByEmailAndPurpose(email, purpose);
+
+        if (otpRecordOptional.isEmpty()) {
+            throw new IllegalArgumentException("No OTP record found for the provided email and purpose.");
+        }
+
+        OtpRecord otpRecord = otpRecordOptional.get();
+
+        // Check if the OTP is expired
+        if (otpRecord.isExpired()) {
+            throw new IllegalArgumentException("OTP is expired.");
+        }
+
+        // Check if the OTP matches
+        if (!otpRecord.getOtp().equals(otp)) {
+            throw new IllegalArgumentException("Invalid OTP.");
+        }
+
+        // Mark the OTP as verified
+        otpRecord.setVerified(true);
+        otpRepository.save(otpRecord);
+
+        return true;
     }
 
     private String generateOtp() {

@@ -22,63 +22,67 @@ public class OwnerRegistrationController {
     private final OwnerService ownerService;
     private final EmailService emailService;
 
-    @PostMapping("/send-test")
-    public ResponseEntity<?> sendTestEmail(@RequestParam String to) {
-        try {
-            emailService.sendSimpleEmail(to, "Test Email", "This is a test email.");
-            return ResponseEntity.ok("Test email sent successfully to " + to);
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Failed to send email: " + e.getMessage());
-        }
-    }
+    // @PostMapping("/send-test")
+    // public ResponseEntity<?> sendTestEmail(@RequestParam String to) {
+    // try {
+    // emailService.sendSimpleEmail(to, "Test Email", "This is a test email.");
+    // return ResponseEntity.ok("Test email sent successfully to " + to);
+    // } catch (Exception e) {
+    // return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+    // .body("Failed to send email: " + e.getMessage());
+    // }
+    // }
 
-    @PostMapping("/owner")
-    public ResponseEntity<?> registerOwner(@Valid @RequestBody OwnerRegistrationDto ownerDto) {
-        try {
-            Owner owner = ownerService.registerOwner(ownerDto);
+    // @PostMapping("/owner")
+    // public ResponseEntity<?> registerOwner(@Valid @RequestBody
+    // OwnerRegistrationDto ownerDto) {
+    // try {
+    // Owner owner = ownerService.registerOwner(ownerDto);
 
-            // Send verification email
-            ownerService.sendVerificationOtp(ownerDto.getEmail());
+    // // Send verification email
+    // ownerService.sendVerificationOtp(ownerDto.getEmail());
 
-            Map<String, Object> response = new HashMap<>();
-            response.put("message", "Owner registration initiated. Please verify your email.");
-            response.put("ownerId", owner.getId());
+    // Map<String, Object> response = new HashMap<>();
+    // response.put("message", "Owner registration initiated. Please verify your
+    // email.");
+    // response.put("ownerId", owner.getId());
 
-            return ResponseEntity.status(HttpStatus.CREATED).body(response);
-        } catch (IllegalArgumentException e) {
-            Map<String, String> errorResponse = new HashMap<>();
-            errorResponse.put("error", e.getMessage());
-            return ResponseEntity.badRequest().body(errorResponse);
-        } catch (Exception e) {
-            Map<String, String> errorResponse = new HashMap<>();
-            errorResponse.put("error", "An unexpected error occurred");
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
-        }
-    }
+    // return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    // } catch (IllegalArgumentException e) {
+    // Map<String, String> errorResponse = new HashMap<>();
+    // errorResponse.put("error", e.getMessage());
+    // return ResponseEntity.badRequest().body(errorResponse);
+    // } catch (Exception e) {
+    // Map<String, String> errorResponse = new HashMap<>();
+    // errorResponse.put("error", "An unexpected error occurred");
+    // return
+    // ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
+    // }
+    // }
 
-    @PostMapping("/verify-email")
-    public ResponseEntity<?> verifyEmail(@Valid @RequestBody OtpVerificationDto verificationDto) {
-        try {
-            boolean verified = ownerService.verifyEmail(
-                    verificationDto.getEmail(),
-                    verificationDto.getOtp());
+    // @PostMapping("/verify-email")
+    // public ResponseEntity<?> verifyEmail(@Valid @RequestBody OtpVerificationDto
+    // verificationDto) {
+    // try {
+    // boolean verified = ownerService.verifyEmail(
+    // verificationDto.getEmail(),
+    // verificationDto.getOtp());
 
-            if (verified) {
-                Map<String, String> response = new HashMap<>();
-                response.put("message", "Email verified successfully");
-                return ResponseEntity.ok(response);
-            } else {
-                Map<String, String> errorResponse = new HashMap<>();
-                errorResponse.put("error", "Invalid or expired OTP");
-                return ResponseEntity.badRequest().body(errorResponse);
-            }
-        } catch (Exception e) {
-            Map<String, String> errorResponse = new HashMap<>();
-            errorResponse.put("error", e.getMessage());
-            return ResponseEntity.badRequest().body(errorResponse);
-        }
-    }
+    // if (verified) {
+    // Map<String, String> response = new HashMap<>();
+    // response.put("message", "Email verified successfully");
+    // return ResponseEntity.ok(response);
+    // } else {
+    // Map<String, String> errorResponse = new HashMap<>();
+    // errorResponse.put("error", "Invalid or expired OTP");
+    // return ResponseEntity.badRequest().body(errorResponse);
+    // }
+    // } catch (Exception e) {
+    // Map<String, String> errorResponse = new HashMap<>();
+    // errorResponse.put("error", e.getMessage());
+    // return ResponseEntity.badRequest().body(errorResponse);
+    // }
+    // }
 
     @PostMapping("/request-qr-link")
     public ResponseEntity<?> requestQrGenerationLink(@RequestParam String email) {
@@ -114,11 +118,20 @@ public class OwnerRegistrationController {
         }
     }
 
+    @CrossOrigin(origins = "http://localhost:5173")
     @PostMapping("/send-otp")
     public ResponseEntity<?> sendOtpToEmail(@RequestParam String email) {
         try {
+            // Check if the email already exists in the Owner table
+            boolean emailExists = ownerService.checkIfEmailExists(email);
+
+            if (emailExists) {
+                Map<String, String> errorResponse = new HashMap<>();
+                errorResponse.put("error", "Email already exists.");
+                return ResponseEntity.badRequest().body(errorResponse);
+            }
+
             // Send OTP to the provided email
-            
             ownerService.sendVerificationOtp(email);
 
             Map<String, String> response = new HashMap<>();
@@ -149,6 +162,31 @@ public class OwnerRegistrationController {
                 errorResponse.put("error", "Invalid or expired OTP.");
                 return ResponseEntity.badRequest().body(errorResponse);
             }
+        } catch (IllegalArgumentException e) {
+            Map<String, String> errorResponse = new HashMap<>();
+            errorResponse.put("error", e.getMessage());
+            return ResponseEntity.badRequest().body(errorResponse);
+        } catch (Exception e) {
+            Map<String, String> errorResponse = new HashMap<>();
+            errorResponse.put("error", "An unexpected error occurred.");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
+        }
+    }
+
+    @PostMapping("/store-owner")
+    public ResponseEntity<?> storeOwner(@Valid @RequestBody OwnerRegistrationDto ownerDto) {
+        try {
+            
+
+            // Save owner information in the database
+            Owner owner = ownerService.storeOwner(ownerDto);
+
+            // Prepare response
+            Map<String, Object> response = new HashMap<>();
+            response.put("message", "Owner information stored successfully.");
+            response.put("ownerId", owner.getId());
+
+            return ResponseEntity.status(HttpStatus.CREATED).body(response);
         } catch (IllegalArgumentException e) {
             Map<String, String> errorResponse = new HashMap<>();
             errorResponse.put("error", e.getMessage());
