@@ -18,7 +18,8 @@ public class Transaction {
     @Pattern(regexp = "^[A-Z0-9]{2,10}$", message = "Vehicle registration number must be between 2-10 uppercase letters and numbers")
     private String vehicleRegistrationNumber;
 
-    
+    @NotBlank(message = "Fuel station name is required")
+    @Size(max = 100, message = "Fuel station name cannot exceed 100 characters")
     private String fuelStationName;
     private double fuelAmount;
     private LocalDateTime timestamp;
