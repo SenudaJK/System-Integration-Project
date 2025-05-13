@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.DecimalMax;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.PastOrPresent;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
@@ -31,7 +32,7 @@ public class Transaction {
     @DecimalMax(value = "1000.0", message = "Fuel amount cannot exceed 1000.0")
     private double fuelAmount;
 
-    
+    @PastOrPresent(message = "Transaction timestamp cannot be in the future")
     private LocalDateTime timestamp;
 
     @PrePersist
