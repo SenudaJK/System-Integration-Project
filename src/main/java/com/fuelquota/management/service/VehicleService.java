@@ -68,14 +68,9 @@ public class VehicleService {
         return vehicleRepository.findByOwnerNic(ownerNic);
     }
 
-    public List<VehicleValidationResponse> fetchVehicleDetailsFromThirdParty(String apiUrl) {
-        // Fetch the list of vehicles from the third-party API
-        ResponseEntity<List<VehicleValidationResponse>> response = restTemplate.exchange(
-                apiUrl,
-                HttpMethod.GET,
-                null,
-                new ParameterizedTypeReference<List<VehicleValidationResponse>>() {}
-        );
+    public VehicleValidationResponse fetchVehicleDetailsByChassis(String apiUrl) {
+        // Fetch vehicle details from the third-party API
+        ResponseEntity<VehicleValidationResponse> response = restTemplate.getForEntity(apiUrl, VehicleValidationResponse.class);
 
         if (response.getStatusCode() != HttpStatus.OK || response.getBody() == null) {
             throw new IllegalArgumentException("Failed to fetch vehicle details from external API.");
@@ -84,10 +79,11 @@ public class VehicleService {
         return response.getBody();
     }
 
-    public boolean validateVehicleDetails(List<VehicleValidationResponse> thirdPartyResponse, String vehicleNumber, String chassisNumber) {
-        // Validate if the vehicle number and chassis number exist in the response
-        return thirdPartyResponse.stream()
-                .anyMatch(vehicle -> vehicle.getVehicleNo().equals(vehicleNumber) &&
-                        vehicle.getChassisNumber().equals(chassisNumber));
+    public boolean validateVehicleDetailsByChassis(VehicleValidationResponse thirdPartyResponse, String vehicleNumber, String nic, String fuelType, String vehicleType) {
+        // Validate vehicle details
+        return thirdPartyResponse.getVehicleNo().equals(vehicleNumber) &&
+               thirdPartyResponse.getOwner().getNic().equals(nic) &&
+               thirdPartyResponse.getFuelType().equalsIgnoreCase(fuelType) &&
+               thirdPartyResponse.getVehicleType().equalsIgnoreCase(vehicleType);
     }
 }
