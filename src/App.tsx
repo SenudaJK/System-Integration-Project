@@ -29,9 +29,9 @@ const ProtectedRoute = ({ children, allowedRoles }: { children: React.ReactNode;
   
   if (allowedRoles && user && !allowedRoles.includes(user.role)) {
     // Redirect to appropriate dashboard based on role
-    if (user.role === 'ADMIN') {
+    if (user.role === 'ROLE_ADMIN') {
       return <Navigate to="/admin" replace />;
-    } else if (user.role === 'STATION_MANAGER') {
+    } else if (user.role === 'ROLE_STATION_MANAGER') {
       return <Navigate to="/station" replace />;
     } else {
       return <Navigate to="/dashboard" replace />;
@@ -47,9 +47,9 @@ const AuthRoute = ({ children }: { children: React.ReactNode }) => {
   
   if (isAuthenticated) {
     // Redirect to appropriate dashboard based on role
-    if (user?.role === 'ADMIN') {
+    if (user?.role === 'ROLE_ADMIN') {
       return <Navigate to="/admin" replace />;
-    } else if (user?.role === 'STATION_MANAGER') {
+    } else if (user?.role === 'ROLE_STATION_MANAGER') {
       return <Navigate to="/station" replace />;
     } else {
       return <Navigate to="/dashboard" replace />;

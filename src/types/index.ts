@@ -2,7 +2,7 @@ export type User = {
   id: string;
   email: string;
   name: string;
-  role: 'ADMIN' | 'USER' | 'STATION_MANAGER';
+  role: 'ROLE_ADMIN' | 'ROLE_USER' | 'ROLE_STATION_MANAGER';
 };
 
 export type FuelStation = {

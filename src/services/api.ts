@@ -32,11 +32,34 @@ async function fetchWithAuth<T>(
       headers
     });
     
+    // Log the response for debugging
+    console.log(`API Response (${endpoint}):`, response.status);
+    
     if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.message || `API error: ${response.status}`);
+      // Try to parse error message from response
+      const errorText = await response.text();
+      let errorMessage = `API error: ${response.status}`;
+      
+      try {
+        const errorData = JSON.parse(errorText);
+        errorMessage = errorData.message || errorMessage;
+      } catch (e) {
+        // If parsing fails, use the text directly
+        if (errorText) errorMessage = errorText;
+      }
+      
+      throw new Error(errorMessage);
     }
     
+    // Check if the response is empty
+    const contentType = response.headers.get('content-type');
+    if (!contentType || contentType.indexOf('application/json') === -1) {
+      // If response is not JSON, return text as success message
+      const text = await response.text();
+      return { message: text } as unknown as T;
+    }
+    
+    // Otherwise, parse as JSON
     return await response.json();
   } catch (error) {
     console.error('API request failed:', error);
@@ -52,7 +75,7 @@ export const authApi = {
       body: JSON.stringify({ username, password })
     }),
     
-  register: (userData: { name: string, email: string, password: string }) => 
+  register: (userData: { username: string, fullName: string, email: string, password: string, roles: string[] }) => 
     fetchWithAuth('/auth/register', {
       method: 'POST',
       body: JSON.stringify(userData)

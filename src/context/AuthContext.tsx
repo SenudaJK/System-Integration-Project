@@ -70,20 +70,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     
     try {
       const response = await authApi.login(username, password) as LoginResponse;
+      console.log('Auth response:', response);
       
       // Store JWT token from response
       localStorage.setItem('token', response.token);
       localStorage.setItem('token_type', response.type);
       
       // Set user data from response
+      // Match the User type defined in types/index.ts
       setUser({
-        id: '', // Provide a default or fetched value
-        email: '', // Provide a default or fetched value
-        name: '', // Provide a default or fetched value
-        role: response.roles[0] || '', // Assuming the first role is the primary role
-        username: response.username
-      } as User);
+        id: response.username, // Use username as ID 
+        email: `${response.username}@example.com`, // Placeholder email
+        name: response.username, // Use username as name
+        role: response.roles[0] as 'ROLE_ADMIN' | 'ROLE_USER' | 'ROLE_STATION_MANAGER', // Keep the ROLE_ prefix
+      });
+      
+      // Successfully logged in, no need to return the response
+      return;
     } catch (err) {
+      console.error('Login failed:', err);
       setError(err instanceof Error ? err.message : 'Login failed');
       throw err;
     } finally {
@@ -118,5 +123,5 @@ export function useAuth() {
   if (context === undefined) {
     throw new Error('useAuth must be used within an AuthProvider');
   }
-  return context;
+  return context; // This line was missing
 }

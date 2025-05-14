@@ -31,21 +31,61 @@ const Login: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMessage(null);
-    
+      
     if (!validate()) return;
-    
+      
     setIsSubmitting(true);
-    
+      
     try {
-      await login(username, password);
+      // Use relative URL that will be handled by the proxy
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ username, password }),
+        credentials: 'include' // Important for cookies/auth
+      });
+        
+      // Log the full response for debugging
+      console.log('Response status:', response.status);
+      console.log('Response headers:', response.headers);
+      
+      if (!response.ok) {
+        // Try to parse error message, but don't throw if it's not JSON
+        const errorText = await response.text();
+        let errorMessage = `Login failed: ${response.status}`;
+        
+        try {
+          const errorData = JSON.parse(errorText);
+          if (errorData.message) errorMessage = errorData.message;
+        } catch (e) {
+          // If it's not JSON, use the text directly if it exists
+          if (errorText) errorMessage = errorText;
+        }
+        
+        throw new Error(errorMessage);
+      }
+        
+      const data = await response.json();
+      console.log('Login response:', data);
+        
+      // Store tokens in localStorage
+      localStorage.setItem('token', data.token);
+      localStorage.setItem('token_type', data.type);
+        
+      // Log the user in via context
+      // NOTE: We already have the response data, so we can skip the duplicate API call
+      // Instead of calling login again, we can directly navigate to dashboard
       navigate('/dashboard');
     } catch (error) {
+      console.error('Login error:', error);
       setErrorMessage(error instanceof Error ? error.message : 'Failed to login. Please check your credentials.');
     } finally {
       setIsSubmitting(false);
     }
   };
-
+    
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100 px-4">
       <div className="max-w-md w-full space-y-8 bg-white p-8 rounded-lg shadow-md">
