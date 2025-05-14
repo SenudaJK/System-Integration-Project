@@ -1,0 +1,38 @@
+[
+  {
+    "id": "1",
+    "stationId": "station1",
+    "stationName": "Central Fuel Station",
+    "vehicleId": "vehicle1",
+    "vehicleRegistration": "ABC-1234",
+    "fuelType": "Petrol 92",
+    "amount": 15,
+    "timestamp": "2024-06-10T08:30:00Z",
+    "userId": "user1",
+    "userName": "John Doe"
+  },
+  {
+    "id": "2",
+    "stationId": "station2",
+    "stationName": "Highway Fuel Station",
+    "vehicleId": "vehicle1",
+    "vehicleRegistration": "ABC-1234",
+    "fuelType": "Petrol 92",
+    "amount": 10,
+    "timestamp": "2024-06-05T14:45:00Z",
+    "userId": "user1",
+    "userName": "John Doe"
+  },
+  {
+    "id": "3",
+    "stationId": "station1",
+    "stationName": "Central Fuel Station",
+    "vehicleId": "vehicle2",
+    "vehicleRegistration": "XYZ-5678",
+    "fuelType": "Diesel",
+    "amount": 20,
+    "timestamp": "2024-06-01T10:15:00Z",
+    "userId": "user1",
+    "userName": "John Doe"
+  }
+]

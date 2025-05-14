@@ -1,0 +1,146 @@
+/**
+ * API service for communicating with the backend
+ */
+
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api';
+
+// Helper function to append JWT token to requests
+const getAuthHeaders = () => {
+  const token = localStorage.getItem('token');
+  return {
+    'Content-Type': 'application/json',
+    ...(token ? { Authorization: `Bearer ${token}` } : {})
+  };
+};
+
+// Generic fetch wrapper with error handling
+async function fetchWithAuth<T>(
+  endpoint: string, 
+  options: RequestInit = {}
+): Promise<T> {
+  const headers = {
+    ...getAuthHeaders(),
+    ...(options.headers || {})
+  };
+  
+  try {
+    const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+      ...options,
+      headers
+    });
+    
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.message || `API error: ${response.status}`);
+    }
+    
+    return await response.json();
+  } catch (error) {
+    console.error('API request failed:', error);
+    throw error;
+  }
+}
+
+// Authentication API
+export const authApi = {
+  login: (username: string, password: string) => 
+    fetchWithAuth('/auth/login', {
+      method: 'POST',
+      body: JSON.stringify({ username, password })
+    }),
+    
+  register: (userData: { name: string, email: string, password: string }) => 
+    fetchWithAuth('/auth/register', {
+      method: 'POST',
+      body: JSON.stringify(userData)
+    }),
+    
+  getCurrentUser: () => fetchWithAuth('/auth/me'),
+  
+  validateToken: () => fetchWithAuth('/auth/validate')
+};
+
+// Admin API
+export const adminApi = {
+  getFuelStations: () => 
+    fetchWithAuth('/admin/fuel-stations'),
+    
+  getTransactions: () => 
+    fetchWithAuth('/admin/transactions'),
+    
+  approveStation: (stationId: string) => 
+    fetchWithAuth(`/admin/fuel-stations/${stationId}/approve`, {
+      method: 'POST'
+    }),
+    
+  deactivateStation: (stationId: string) => 
+    fetchWithAuth(`/admin/fuel-stations/${stationId}/deactivate`, {
+      method: 'POST'
+    }),
+    
+  addFuelStation: (stationData: Omit<FuelStation, 'id' | 'status' | 'createdAt'>) => 
+    fetchWithAuth('/admin/fuel-stations', {
+      method: 'POST',
+      body: JSON.stringify(stationData)
+    })
+};
+
+// Define the Vehicle type
+type Vehicle = {
+  id: string;
+  remainingQuota: number;
+  [key: string]: any; // Add other properties as needed
+};
+
+// Define the FuelStation type
+type FuelStation = {
+  id: string;
+  name: string;
+  location: string;
+  status: string;
+  createdAt: string;
+  [key: string]: any; // Add other properties as needed
+};
+
+// User API
+export const userApi = {
+  getVehicles: () => 
+    fetchWithAuth('/user/vehicles'),
+    
+  addVehicle: (vehicleData: Omit<Vehicle, 'id' | 'remainingQuota'>) => 
+    fetchWithAuth('/user/vehicles', {
+      method: 'POST',
+      body: JSON.stringify(vehicleData)
+    }),
+    
+  getQuota: (vehicleId: string) => 
+    fetchWithAuth(`/user/vehicles/${vehicleId}/quota`),
+    
+  requestQuota: (vehicleId: string, amount: number) => 
+    fetchWithAuth(`/user/vehicles/${vehicleId}/request-quota`, {
+      method: 'POST',
+      body: JSON.stringify({ amount })
+    })
+};
+
+// Station Manager API
+export const stationApi = {
+  getStationDetails: () => 
+    fetchWithAuth('/station/details'),
+    
+  recordTransaction: (transaction: {
+    vehicleId: string,
+    amount: number,
+    fuelType: string
+  }) => 
+    fetchWithAuth('/station/record-transaction', {
+      method: 'POST',
+      body: JSON.stringify(transaction)
+    }),
+    
+  getDailyTransactions: () => 
+    fetchWithAuth('/station/transactions/daily'),
+    
+  validateVehicle: (registrationNumber: string) => 
+    fetchWithAuth(`/station/vehicle/validate?registrationNumber=${registrationNumber}`)
+};
