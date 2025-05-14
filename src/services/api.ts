@@ -2,14 +2,17 @@
  * API service for communicating with the backend
  */
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api';
+// Make sure this matches exactly with your backend URL
+const API_BASE_URL = 'http://localhost:8080/api';
 
 // Helper function to append JWT token to requests
 const getAuthHeaders = () => {
   const token = localStorage.getItem('token');
+  const tokenType = localStorage.getItem('token_type') || 'Bearer';
+  
   return {
     'Content-Type': 'application/json',
-    ...(token ? { Authorization: `Bearer ${token}` } : {})
+    ...(token ? { Authorization: `${tokenType} ${token}` } : {})
   };
 };
 
