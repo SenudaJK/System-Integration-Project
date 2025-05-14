@@ -1,18 +1,39 @@
 import React, { useState, useEffect } from 'react';
-import { BarChart2, Map, Users, AlertTriangle, TrendingUp, Check, X } from 'lucide-react';
+import { BarChart2, Map, Users, AlertTriangle, TrendingUp, Check, X, Phone } from 'lucide-react';
 import Card from '../../components/ui/Card';
 import Button from '../../components/ui/Button';
 import Badge from '../../components/ui/Badge';
 import Table from '../../components/ui/Table';
 import { adminApi } from '../../services/api';
-import { FuelStation, Transaction } from '../../types';
+
+// Update the FuelStation type to match your API response
+interface FuelStation {
+  id: number; // Changed from string to number
+  name: string;
+  location: string;
+  ownerName: string; // Added to match API
+  contactNumber: string;
+  active: boolean; // Changed from status string to active boolean
+  createdAt: string;
+  // Add a computed status field for UI purposes
+  status?: 'APPROVED' | 'PENDING' | 'DEACTIVATED';
+}
+
+interface Transaction {
+  id: string;
+  stationName: string;
+  vehicleRegistration: string;
+  fuelType: string;
+  amount: number;
+  timestamp: string;
+}
 
 const Dashboard: React.FC = () => {
   const [stations, setStations] = useState<FuelStation[]>([]);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
-  const [refreshTrigger, setRefreshTrigger] = useState(0); // Add this to trigger refreshes
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
 
   useEffect(() => {
     const fetchDashboardData = async () => {
@@ -20,16 +41,29 @@ const Dashboard: React.FC = () => {
         setIsLoading(true);
         setError('');
         
-        const [stationsData, transactionsData] = await Promise.all([
-          adminApi.getFuelStations() as Promise<FuelStation[]>,
-          adminApi.getTransactions() as Promise<Transaction[]>
-        ]);
+        // Fetch fuel stations from the API
+        const stationsData = await adminApi.getFuelStations() as FuelStation[];
         
-        console.log('Fetched stations:', stationsData);
-        console.log('Fetched transactions:', transactionsData);
+        // Map the active boolean to our status enum for UI purposes
+        const processedStations = stationsData.map((station: FuelStation) => ({
+          ...station,
+          status: station.active ? 'APPROVED' as 'APPROVED' : 'PENDING' as 'PENDING'
+        }));
         
-        setStations(stationsData);
-        setTransactions(transactionsData);
+        console.log('Fetched stations:', processedStations);
+        
+        setStations(processedStations);
+        
+        // Also fetch transactions if your API supports it
+        try {
+          const transactionsData = await adminApi.getTransactions() as Transaction[];
+          console.log('Fetched transactions:', transactionsData);
+          setTransactions(transactionsData);
+        } catch (transactionError) {
+          console.error('Transaction fetch error:', transactionError);
+          // Continue without transactions data
+          setTransactions([]);
+        }
       } catch (err) {
         console.error('Dashboard data fetch error:', err);
         setError('Failed to load dashboard data. Please check your connection and try again.');
@@ -39,11 +73,11 @@ const Dashboard: React.FC = () => {
     };
 
     fetchDashboardData();
-  }, [refreshTrigger]); // Re-fetch when refreshTrigger changes
+  }, [refreshTrigger]);
 
   // Filter stations by status
-  const pendingStations = stations.filter(station => station.status === 'PENDING');
-  const activeStations = stations.filter(station => station.status === 'APPROVED');
+  const pendingStations = stations.filter(station => !station.active);
+  const activeStations = stations.filter(station => station.active);
 
   // Calculate total fuel distributed
   const getTotalFuelDistributed = () => {
@@ -51,32 +85,80 @@ const Dashboard: React.FC = () => {
   };
 
   // Get appropriate status badge for a station
-  const getStationStatusBadge = (status: string) => {
-    switch (status) {
-      case 'APPROVED':
-        return <Badge variant="success">Approved</Badge>;
-      case 'PENDING':
-        return <Badge variant="warning">Pending</Badge>;
-      case 'DEACTIVATED':
-        return <Badge variant="danger">Deactivated</Badge>;
-      default:
-        return <Badge>{status}</Badge>;
-    }
+  const getStationStatusBadge = (active: boolean) => {
+    return active 
+      ? <Badge variant="success">Active</Badge> 
+      : <Badge variant="warning">Inactive</Badge>;
   };
+
+  // Column definitions for fuel stations table
+  const fuelStationsColumns = [
+    { 
+      header: 'Name',
+      accessor: (row: FuelStation) => row.name
+    },
+    { 
+      header: 'Location',
+      accessor: (row: FuelStation) => row.location
+    },
+    { 
+      header: 'Owner',
+      accessor: (row: FuelStation) => row.ownerName
+    },
+    { 
+      header: 'Contact',
+      accessor: (row: FuelStation) => (
+        <div className="flex items-center">
+          <Phone size={14} className="mr-1" />
+          {row.contactNumber}
+        </div>
+      )
+    },
+    { 
+      header: 'Status',
+      accessor: (row: FuelStation) => getStationStatusBadge(row.active)
+    },
+    { 
+      header: 'Actions',
+      accessor: (row: FuelStation) => (
+        <div className="flex space-x-2">
+          {!row.active ? (
+            <Button
+              size="sm"
+              variant="success"
+              onClick={() => handleActivateStation(row.id)}
+              icon={<Check size={14} />}
+            >
+              Activate
+            </Button>
+          ) : (
+            <Button
+              size="sm"
+              variant="danger"
+              onClick={() => handleDeactivateStation(row.id)}
+              icon={<X size={14} />}
+            >
+              Deactivate
+            </Button>
+          )}
+        </div>
+      )
+    }
+  ];
 
   // Column definitions for transactions table
   const recentTransactionsColumns = [
     { 
       header: 'Station',
-      accessor: 'stationName'
+      accessor: (row: Transaction) => row.stationName
     },
     { 
       header: 'Vehicle',
-      accessor: 'vehicleRegistration'
+      accessor: (row: Transaction) => row.vehicleRegistration
     },
     { 
       header: 'Fuel Type',
-      accessor: 'fuelType'
+      accessor: (row: Transaction) => row.fuelType
     },
     { 
       header: 'Amount (L)',
@@ -88,55 +170,16 @@ const Dashboard: React.FC = () => {
     }
   ];
 
-  // Column definitions for pending stations table
-  const pendingStationsColumns = [
-    { 
-      header: 'Name',
-      accessor: 'name'
-    },
-    { 
-      header: 'Location',
-      accessor: 'location'
-    },
-    { 
-      header: 'Status',
-      accessor: (row: FuelStation) => getStationStatusBadge(row.status)
-    },
-    { 
-      header: 'Actions',
-      accessor: (row: FuelStation) => (
-        <div className="flex space-x-2">
-          <Button
-            size="sm"
-            variant="success"
-            onClick={() => handleApproveStation(row.id)}
-            icon={<Check size={14} />}
-          >
-            Approve
-          </Button>
-          <Button
-            size="sm"
-            variant="danger"
-            onClick={() => handleDeactivateStation(row.id)}
-            icon={<X size={14} />}
-          >
-            Reject
-          </Button>
-        </div>
-      )
-    }
-  ];
-
-  // Handle station approval
-  const handleApproveStation = async (stationId: string) => {
+  // Handle station activation
+  const handleActivateStation = async (stationId: number) => {
     try {
-      await adminApi.approveStation(stationId);
+      await adminApi.approveStation(stationId.toString());
       
       // Update local state
       setStations(prevStations => 
         prevStations.map(station => 
           station.id === stationId 
-            ? { ...station, status: 'APPROVED' } 
+            ? { ...station, active: true } 
             : station
         )
       );
@@ -144,21 +187,21 @@ const Dashboard: React.FC = () => {
       // Alternatively, refresh the data completely
       setRefreshTrigger(prev => prev + 1);
     } catch (err) {
-      console.error('Failed to approve station:', err);
+      console.error('Failed to activate station:', err);
       // Add error notification here if needed
     }
   };
 
   // Handle station deactivation
-  const handleDeactivateStation = async (stationId: string) => {
+  const handleDeactivateStation = async (stationId: number) => {
     try {
-      await adminApi.deactivateStation(stationId);
+      await adminApi.deactivateStation(stationId.toString());
       
       // Update local state
       setStations(prevStations => 
         prevStations.map(station => 
           station.id === stationId 
-            ? { ...station, status: 'DEACTIVATED' } 
+            ? { ...station, active: false } 
             : station
         )
       );
@@ -228,9 +271,9 @@ const Dashboard: React.FC = () => {
               <Users className="h-6 w-6" />
             </div>
             <div className="ml-4">
-              <h3 className="text-lg font-semibold">Pending Stations</h3>
+              <h3 className="text-lg font-semibold">Inactive Stations</h3>
               <p className="text-2xl font-bold">{pendingStations.length}</p>
-              <p className="text-sm text-teal-100">Awaiting approval</p>
+              <p className="text-sm text-teal-100">Awaiting activation</p>
             </div>
           </div>
         </Card>
@@ -262,41 +305,43 @@ const Dashboard: React.FC = () => {
         </Card>
       </div>
       
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="space-y-6">
         <Card
-          title="Pending Station Approvals"
-          subtitle="Stations waiting for administrative approval"
+          title="All Fuel Stations"
+          subtitle="Manage and monitor all registered fuel stations"
         >
           <Table
-            columns={pendingStationsColumns}
-            data={pendingStations}
+            columns={fuelStationsColumns}
+            data={stations}
             keyField="id"
             isLoading={isLoading}
-            emptyMessage="No pending stations to approve"
+            emptyMessage="No fuel stations found"
           />
         </Card>
         
-        <Card
-          title="Recent Transactions"
-          subtitle="Latest fuel distributions across all stations"
-          headerActions={
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => {/* View all transactions */}}
-            >
-              View All
-            </Button>
-          }
-        >
-          <Table
-            columns={recentTransactionsColumns}
-            data={transactions.slice(0, 5)}
-            keyField="id"
-            isLoading={isLoading}
-            emptyMessage="No transactions recorded yet"
-          />
-        </Card>
+        {transactions.length > 0 && (
+          <Card
+            title="Recent Transactions"
+            subtitle="Latest fuel distributions across all stations"
+            headerActions={
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => {/* View all transactions */}}
+              >
+                View All
+              </Button>
+            }
+          >
+            <Table
+              columns={recentTransactionsColumns}
+              data={transactions.slice(0, 5)}
+              keyField="id"
+              isLoading={isLoading}
+              emptyMessage="No transactions recorded yet"
+            />
+          </Card>
+        )}
       </div>
     </div>
   );
