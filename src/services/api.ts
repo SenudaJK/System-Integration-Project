@@ -96,12 +96,12 @@ export const adminApi = {
     
   approveStation: (stationId: string) => 
     fetchWithAuth(`/admin/fuel-stations/${stationId}/approve`, {
-      method: 'POST'
+      method: 'PUT' // Changed from POST to PUT to match backend
     }),
     
   deactivateStation: (stationId: string) => 
     fetchWithAuth(`/admin/fuel-stations/${stationId}/deactivate`, {
-      method: 'POST'
+      method: 'PUT' // Changed from POST to PUT to match backend
     }),
     
   addFuelStation: (stationData: Omit<FuelStation, 'id' | 'status' | 'createdAt'>) => 

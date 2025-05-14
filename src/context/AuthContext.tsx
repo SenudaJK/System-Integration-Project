@@ -9,6 +9,7 @@ interface AuthContextType {
   login: (username: string, password: string) => Promise<void>;
   logout: () => void;
   error: string | null;
+  isAdmin: () => boolean; // Add this function to the context type
 }
 
 // This interface maps to the backend response structure
@@ -25,6 +26,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // Add user role handling
+  const getUserRoleFromStorage = () => {
+    return localStorage.getItem('user_role') || '';
+  };
+
+  const isAdmin = () => {
+    return getUserRoleFromStorage() === 'ROLE_ADMIN';
+  };
 
   // Check if user is already logged in on mount
   useEffect(() => {
@@ -75,6 +85,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // Store JWT token from response
       localStorage.setItem('token', response.token);
       localStorage.setItem('token_type', response.type);
+      localStorage.setItem('user_role', response.roles[0]); // Store user role
       
       // Set user data from response
       // Match the User type defined in types/index.ts
@@ -99,20 +110,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const logout = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('token_type');
+    localStorage.removeItem('user_role'); // Remove user role
     setUser(null);
   };
 
+  const value = {
+    user,
+    isAuthenticated: !!user,
+    isLoading,
+    login,
+    logout,
+    error,
+    isAdmin // Add this function to easily check admin status
+  };
+
   return (
-    <AuthContext.Provider
-      value={{
-        user,
-        isAuthenticated: !!user,
-        isLoading,
-        login,
-        logout,
-        error
-      }}
-    >
+    <AuthContext.Provider value={value}>
       {children}
     </AuthContext.Provider>
   );
@@ -123,5 +136,5 @@ export function useAuth() {
   if (context === undefined) {
     throw new Error('useAuth must be used within an AuthProvider');
   }
-  return context; // This line was missing
+  return context;
 }

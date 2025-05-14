@@ -12,36 +12,45 @@ const Dashboard: React.FC = () => {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
+  const [refreshTrigger, setRefreshTrigger] = useState(0); // Add this to trigger refreshes
 
   useEffect(() => {
     const fetchDashboardData = async () => {
       try {
         setIsLoading(true);
+        setError('');
+        
         const [stationsData, transactionsData] = await Promise.all([
-          adminApi.getFuelStations(),
-          adminApi.getTransactions()
+          adminApi.getFuelStations() as Promise<FuelStation[]>,
+          adminApi.getTransactions() as Promise<Transaction[]>
         ]);
+        
+        console.log('Fetched stations:', stationsData);
+        console.log('Fetched transactions:', transactionsData);
         
         setStations(stationsData);
         setTransactions(transactionsData);
       } catch (err) {
-        setError('Failed to load dashboard data');
-        console.error(err);
+        console.error('Dashboard data fetch error:', err);
+        setError('Failed to load dashboard data. Please check your connection and try again.');
       } finally {
         setIsLoading(false);
       }
     };
 
     fetchDashboardData();
-  }, []);
+  }, [refreshTrigger]); // Re-fetch when refreshTrigger changes
 
+  // Filter stations by status
   const pendingStations = stations.filter(station => station.status === 'PENDING');
   const activeStations = stations.filter(station => station.status === 'APPROVED');
 
+  // Calculate total fuel distributed
   const getTotalFuelDistributed = () => {
     return transactions.reduce((total, transaction) => total + transaction.amount, 0);
   };
 
+  // Get appropriate status badge for a station
   const getStationStatusBadge = (status: string) => {
     switch (status) {
       case 'APPROVED':
@@ -55,6 +64,7 @@ const Dashboard: React.FC = () => {
     }
   };
 
+  // Column definitions for transactions table
   const recentTransactionsColumns = [
     { 
       header: 'Station',
@@ -78,14 +88,15 @@ const Dashboard: React.FC = () => {
     }
   ];
 
+  // Column definitions for pending stations table
   const pendingStationsColumns = [
     { 
       header: 'Name',
       accessor: 'name'
     },
     { 
-      header: 'City',
-      accessor: 'city'
+      header: 'Location',
+      accessor: 'location'
     },
     { 
       header: 'Status',
@@ -116,10 +127,12 @@ const Dashboard: React.FC = () => {
     }
   ];
 
+  // Handle station approval
   const handleApproveStation = async (stationId: string) => {
     try {
       await adminApi.approveStation(stationId);
-      // Update the local state
+      
+      // Update local state
       setStations(prevStations => 
         prevStations.map(station => 
           station.id === stationId 
@@ -127,15 +140,21 @@ const Dashboard: React.FC = () => {
             : station
         )
       );
+      
+      // Alternatively, refresh the data completely
+      setRefreshTrigger(prev => prev + 1);
     } catch (err) {
       console.error('Failed to approve station:', err);
+      // Add error notification here if needed
     }
   };
 
+  // Handle station deactivation
   const handleDeactivateStation = async (stationId: string) => {
     try {
       await adminApi.deactivateStation(stationId);
-      // Update the local state
+      
+      // Update local state
       setStations(prevStations => 
         prevStations.map(station => 
           station.id === stationId 
@@ -143,11 +162,16 @@ const Dashboard: React.FC = () => {
             : station
         )
       );
+      
+      // Alternatively, refresh the data completely
+      setRefreshTrigger(prev => prev + 1);
     } catch (err) {
       console.error('Failed to deactivate station:', err);
+      // Add error notification here if needed
     }
   };
 
+  // Loading state
   if (isLoading) {
     return (
       <div className="flex justify-center items-center h-64">
@@ -156,6 +180,7 @@ const Dashboard: React.FC = () => {
     );
   }
 
+  // Error state
   if (error) {
     return (
       <div className="bg-red-50 border border-red-200 text-red-700 p-4 rounded-md">
@@ -163,10 +188,19 @@ const Dashboard: React.FC = () => {
           <AlertTriangle className="h-5 w-5 mr-2" />
           <span>{error}</span>
         </div>
+        <div className="mt-4">
+          <Button 
+            variant="outline" 
+            onClick={() => setRefreshTrigger(prev => prev + 1)}
+          >
+            Retry
+          </Button>
+        </div>
       </div>
     );
   }
 
+  // Main dashboard UI
   return (
     <div className="space-y-6">
       <div>

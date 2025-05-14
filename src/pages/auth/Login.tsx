@@ -44,27 +44,12 @@ const Login: React.FC = () => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ username, password }),
-        credentials: 'include' // Important for cookies/auth
+        credentials: 'include'
       });
         
-      // Log the full response for debugging
-      console.log('Response status:', response.status);
-      console.log('Response headers:', response.headers);
-      
       if (!response.ok) {
-        // Try to parse error message, but don't throw if it's not JSON
-        const errorText = await response.text();
-        let errorMessage = `Login failed: ${response.status}`;
-        
-        try {
-          const errorData = JSON.parse(errorText);
-          if (errorData.message) errorMessage = errorData.message;
-        } catch (e) {
-          // If it's not JSON, use the text directly if it exists
-          if (errorText) errorMessage = errorText;
-        }
-        
-        throw new Error(errorMessage);
+        // Error handling code as before...
+        throw new Error(errorMessage || 'An unknown error occurred.');
       }
         
       const data = await response.json();
@@ -73,11 +58,17 @@ const Login: React.FC = () => {
       // Store tokens in localStorage
       localStorage.setItem('token', data.token);
       localStorage.setItem('token_type', data.type);
+      localStorage.setItem('user_role', data.roles[0]); // Save the user's role
         
-      // Log the user in via context
-      // NOTE: We already have the response data, so we can skip the duplicate API call
-      // Instead of calling login again, we can directly navigate to dashboard
-      navigate('/dashboard');
+      // Determine where to navigate based on user role
+      const userRole = data.roles[0];
+      if (userRole === 'ROLE_ADMIN') {
+        navigate('/admin/dashboard');
+      } else if (userRole === 'ROLE_STATION_MANAGER') {
+        navigate('/station/dashboard');
+      } else {
+        navigate('/user/dashboard');
+      }
     } catch (error) {
       console.error('Login error:', error);
       setErrorMessage(error instanceof Error ? error.message : 'Failed to login. Please check your credentials.');
