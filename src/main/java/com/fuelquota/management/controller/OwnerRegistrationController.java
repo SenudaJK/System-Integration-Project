@@ -119,7 +119,7 @@ public class OwnerRegistrationController {
     }
 
     @CrossOrigin(origins = "http://localhost:5173")
-    @PostMapping("/send-otp")
+    @PostMapping("/send-otp") /* */
     public ResponseEntity<?> sendOtpToEmail(@RequestParam String email) {
         try {
             // Check if the email already exists in the Owner table
@@ -148,7 +148,7 @@ public class OwnerRegistrationController {
         }
     }
 
-    @PostMapping("/validate-otp")
+    @PostMapping("/validate-otp")//* */
     public ResponseEntity<?> validateOtp(@RequestParam String email, @RequestParam String otp) {
         try {
             boolean verified = ownerService.verifyEmail(email, otp);
@@ -197,4 +197,44 @@ public class OwnerRegistrationController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
         }
     }
+
+    @PostMapping("/validate-and-store-owner-vehicle")
+public ResponseEntity<?> validateAndStoreOwnerAndVehicle(@Valid @RequestBody OwnerVehicleDto ownerVehicleDto) {
+    try {
+        // Step 1: Fetch vehicle details from the third-party API
+        String thirdPartyApiUrl = "http://localhost:8081/api/vehicles/by-nic?nic=" + ownerVehicleDto.getNic();
+        VehicleValidationResponse thirdPartyResponse = ownerService.fetchVehicleDetailsFromThirdParty(thirdPartyApiUrl);
+
+        // Step 2: Validate vehicle details
+        boolean isValid = ownerService.validateVehicleDetails(
+                thirdPartyResponse,
+                ownerVehicleDto.getVehicleNumber(),
+                ownerVehicleDto.getChassisNumber()
+        );
+
+        if (!isValid) {
+            Map<String, String> errorResponse = new HashMap<>();
+            errorResponse.put("error", "Vehicle details validation failed.");
+            return ResponseEntity.badRequest().body(errorResponse);
+        }
+
+        // Step 3: Store owner details
+        Owner owner = ownerService.storeOwner(ownerVehicleDto);
+
+        // Step 4: Store vehicle details
+        ownerService.storeVehicle(owner, ownerVehicleDto);
+
+        Map<String, String> response = new HashMap<>();
+        response.put("message", "Owner and vehicle details stored successfully.");
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    } catch (IllegalArgumentException e) {
+        Map<String, String> errorResponse = new HashMap<>();
+        errorResponse.put("error", e.getMessage());
+        return ResponseEntity.badRequest().body(errorResponse);
+    } catch (Exception e) {
+        Map<String, String> errorResponse = new HashMap<>();
+        errorResponse.put("error", "An unexpected error occurred.");
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
+    }
+}
 }
