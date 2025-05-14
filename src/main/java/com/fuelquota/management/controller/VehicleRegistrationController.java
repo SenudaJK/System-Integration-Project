@@ -3,6 +3,8 @@ package com.fuelquota.management.controller;
 import com.fuelquota.management.dto.VehicleRegistrationDto;
 import com.fuelquota.management.model.Vehicle;
 import com.fuelquota.management.service.VehicleService;
+import com.fuelquota.management.service.OwnerService;
+import com.fuelquota.management.dto.VehicleValidationResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -14,13 +16,14 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/api/register")
+@RequestMapping("/api/vehicle")
 @RequiredArgsConstructor
 public class VehicleRegistrationController {
 
     private final VehicleService vehicleService;
+    private final OwnerService ownerService;
 
-    @PostMapping("/vehicle")
+    @PostMapping("/register")
     public ResponseEntity<?> registerVehicle(@Valid @RequestBody VehicleRegistrationDto vehicleDto) {
         try {
             Vehicle vehicle = vehicleService.registerVehicle(vehicleDto);
@@ -53,4 +56,35 @@ public class VehicleRegistrationController {
             return ResponseEntity.badRequest().body(errorResponse);
         }
     }
+
+    @GetMapping("/validate-vehicle")
+public ResponseEntity<?> validateVehicle(@RequestParam String nic, @RequestParam String vehicleNumber, @RequestParam String chassisNumber) {
+    try {
+        // Step 1: Fetch vehicle details from the external API
+        String thirdPartyApiUrl = "http://localhost:8081/api/vehicles/by-nic?nic=" + nic;
+        List<VehicleValidationResponse> thirdPartyResponse = vehicleService.fetchVehicleDetailsFromThirdParty(thirdPartyApiUrl);
+
+        // Step 2: Validate vehicle details
+        boolean isValid = vehicleService.validateVehicleDetails(thirdPartyResponse, vehicleNumber, chassisNumber);
+
+        if (!isValid) {
+            Map<String, String> errorResponse = new HashMap<>();
+            errorResponse.put("error", "Vehicle details validation failed.");
+            return ResponseEntity.badRequest().body(errorResponse);
+        }
+
+        // Step 3: Return success response
+        Map<String, String> response = new HashMap<>();
+        response.put("message", "Vehicle details validated successfully.");
+        return ResponseEntity.ok(response);
+    } catch (IllegalArgumentException e) {
+        Map<String, String> errorResponse = new HashMap<>();
+        errorResponse.put("error", e.getMessage());
+        return ResponseEntity.badRequest().body(errorResponse);
+    } catch (Exception e) {
+        Map<String, String> errorResponse = new HashMap<>();
+        errorResponse.put("error", "An unexpected error occurred.");
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
+    }
+}
 }
