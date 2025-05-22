@@ -57,7 +57,7 @@ public class VehicleRegistrationController {
         }
     }
 
-    @GetMapping("/validate-vehicle-by-chassis")
+    @GetMapping("/validate-vehicle-by-chassis") /**/ 
     public ResponseEntity<?> validateVehicleByChassis(@RequestParam String chassisNumber,
             @RequestParam String vehicleNumber, @RequestParam String nic, @RequestParam String fuelType,
             @RequestParam String vehicleType) {

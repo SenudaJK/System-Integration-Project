@@ -3,6 +3,7 @@ package com.fuelquota.management.controller;
 import com.fuelquota.management.dto.OwnerRegistrationDto;
 import com.fuelquota.management.dto.OtpVerificationDto;
 import com.fuelquota.management.model.Owner;
+import com.fuelquota.management.model.Vehicle;
 import com.fuelquota.management.service.EmailService;
 import com.fuelquota.management.service.OwnerService;
 import jakarta.validation.Valid;
@@ -10,6 +11,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import com.fuelquota.management.dto.VehicleRegistrationDto;
+import com.fuelquota.management.model.Vehicle;
+import com.fuelquota.management.service.VehicleService;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -21,6 +25,7 @@ public class OwnerRegistrationController {
 
     private final OwnerService ownerService;
     private final EmailService emailService;
+    private final VehicleService vehicleService;
 
     // @PostMapping("/send-test")
     // public ResponseEntity<?> sendTestEmail(@RequestParam String to) {
@@ -173,18 +178,28 @@ public class OwnerRegistrationController {
         }
     }
 
-    @PostMapping("/store-owner")
+    @PostMapping("/store-ownervehicle")
     public ResponseEntity<?> storeOwner(@Valid @RequestBody OwnerRegistrationDto ownerDto) {
         try {
-            
-
             // Save owner information in the database
             Owner owner = ownerService.storeOwner(ownerDto);
 
+            // Create and initialize VehicleRegistrationDto from ownerDto
+            VehicleRegistrationDto vehicleDto = new VehicleRegistrationDto();
+            vehicleDto.setOwnerNic(ownerDto.getNic());
+            vehicleDto.setVehicleNumber(ownerDto.getVehicleNumber());
+            vehicleDto.setChassisNumber(ownerDto.getChassisNumber());
+            vehicleDto.setVehicleType(ownerDto.getVehicleType());
+            vehicleDto.setFuelType(ownerDto.getFuelType());
+
+            // Save vehicle information in the database
+            Vehicle vehicle = vehicleService.registerVehicle(vehicleDto);
+
             // Prepare response
             Map<String, Object> response = new HashMap<>();
-            response.put("message", "Owner information stored successfully.");
+            response.put("message", "Owner and vehicle information stored successfully.");
             response.put("ownerId", owner.getId());
+            response.put("vehicleId", vehicle.getId());
 
             return ResponseEntity.status(HttpStatus.CREATED).body(response);
         } catch (IllegalArgumentException e) {

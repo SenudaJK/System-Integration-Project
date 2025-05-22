@@ -28,4 +28,6 @@ public class OwnerRegistrationDto {
     
     @NotBlank(message = "Address is required")
     private String address;
+
+    
 }
