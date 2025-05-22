@@ -36,7 +36,7 @@ const registrationSchema = Yup.object().shape({
   
   // Vehicle Info
   vehicleNumber: Yup.string()
-    .matches(/^[A-Z]{2,3}-\d{4}$/, 'Invalid vehicle number format (e.g., KL-7896)')
+    //.matches(/^[A-Z]{2,3}-\d{4}$/, 'Invalid vehicle number format (e.g., KL-7896)')
     .required('Vehicle number is required'),
   chassisNumber: Yup.string()
     .min(5, 'Chassis number is too short')
@@ -55,11 +55,27 @@ const SignupPage: React.FC = () => {
   const [currentStep, setCurrentStep] = useState<SignupStep>(SignupStep.EMAIL);
   const [email, setEmail] = useState<string>('');
   const navigate = useNavigate();
-  
+
+  // Move these states to the top level of the component
+  const [formData, setFormData] = useState({
+    email: '',
+    firstName: '',
+    lastName: '',
+    nic: '',
+    address: '',
+    contactNumber: '',
+    vehicleNumber: '',
+    chassisNumber: '',
+    vehicleType: '',
+    fuelType: '',
+  });
+
+  const [errors, setErrors] = useState<{ [key: string]: string }>({});
+
   if (isAuthenticated) {
     return <Navigate to="/dashboard" />;
   }
-  
+
   const handleEmailSubmit = async (email: string) => {
     try {
       // Call the send OTP API with email as a query parameter
@@ -94,28 +110,35 @@ const SignupPage: React.FC = () => {
   
   const handleRegistrationSubmit = async (values: any) => {
     try {
-      const newVehicle: Vehicle = {
-        id: Date.now().toString(),
+      // Combine owner and vehicle details into a single payload
+      const payload = {
+        nic: values.nic,
+        firstName: values.firstName,
+        lastName: values.lastName,
+        email: values.email,
+        phone: values.contactNumber,
+        address: values.address,
         vehicleNumber: values.vehicleNumber,
         chassisNumber: values.chassisNumber,
         vehicleType: values.vehicleType,
         fuelType: values.fuelType,
-        quotaAmount: 20,
-        remainingQuota: 20,
       };
-      
-      updateUserInfo({
-        name: values.name,
-        nic: values.nic,
-        address: values.address,
-        contactNumber: values.contactNumber,
-        vehicles: [newVehicle],
-      });
-      
-      toast.success('Registration successful!');
+
+      console.log('Payload:', payload);
+
+      // Send the payload to the new API endpoint
+      const response = await axios.post('http://localhost:8080/api/register/store-ownervehicle', payload);
+
+      // Show success message and navigate to the dashboard
+      toast.success(response.data.message);
       navigate('/dashboard');
     } catch (error) {
-      toast.error('Registration failed. Please try again.');
+      console.error('Registration error:', error);
+      if (axios.isAxiosError(error) && error.response?.status === 400) {
+        toast.error(error.response.data.error || 'Validation failed. Please check your input.');
+      } else {
+        toast.error('Registration failed. Please try again.');
+      }
     }
   };
   
@@ -125,169 +148,215 @@ const SignupPage: React.FC = () => {
     }
   };
 
-  const renderRegistrationForm = () => (
-    <div className="animate-fade-in">
-      <h2 className="text-2xl font-bold text-primary-700 mb-2">
-        Complete Registration
-      </h2>
-      
-      <p className="mb-6 text-neutral-600">
-        Please provide your personal and vehicle details to complete the registration.
-      </p>
-      
-      <Formik
-        initialValues={{
-          name: '',
-          nic: '',
-          address: '',
-          contactNumber: '',
-          vehicleNumber: '',
-          chassisNumber: '',
-          vehicleType: '',
-          fuelType: '',
-        }}
-        validationSchema={registrationSchema}
-        onSubmit={handleRegistrationSubmit}
-      >
-        {({ isSubmitting }) => (
-          <Form className="space-y-6">
-            <div className="bg-primary-50 p-4 rounded-lg mb-6">
-              <h3 className="text-lg font-semibold text-primary-700 mb-4">Personal Information</h3>
-              <div className="space-y-4">
-                <div className="form-group">
-                  <label htmlFor="name" className="form-label">Full Name</label>
-                  <Field
-                    type="text"
-                    id="name"
-                    name="name"
-                    className="input-field"
-                    placeholder="Enter your full name"
-                  />
-                  <ErrorMessage name="name" component="div" className="text-error text-sm mt-1" />
-                </div>
+  const validateForm = () => {
+    const newErrors: { [key: string]: string } = {};
 
-                <div className="form-group">
-                  <label htmlFor="nic" className="form-label">NIC Number</label>
-                  <Field
-                    type="text"
-                    id="nic"
-                    name="nic"
-                    className="input-field"
-                    placeholder="Enter your NIC number"
-                  />
-                  <ErrorMessage name="nic" component="div" className="text-error text-sm mt-1" />
-                </div>
+    if (!formData.email.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) newErrors.email = 'Invalid email format';
+    if (!formData.firstName) newErrors.firstName = 'First name is required';
+    if (!formData.lastName) newErrors.lastName = 'Last name is required';
+    if (!formData.nic.match(/^(\d{9}[vVxX]|\d{12})$/)) newErrors.nic = 'Invalid NIC format';
+    if (!formData.address) newErrors.address = 'Address is required';
+    if (!formData.contactNumber.match(/^(\+94|0)[0-9]{9}$/)) newErrors.contactNumber = 'Invalid phone number format';
+    if (!formData.vehicleNumber) newErrors.vehicleNumber = 'Vehicle number is required';
+    if (!formData.chassisNumber) newErrors.chassisNumber = 'Chassis number is required';
+    if (!formData.vehicleType) newErrors.vehicleType = 'Vehicle type is required';
+    if (!formData.fuelType) newErrors.fuelType = 'Fuel type is required';
 
-                <div className="form-group">
-                  <label htmlFor="address" className="form-label">Residential Address</label>
-                  <Field
-                    as="textarea"
-                    id="address"
-                    name="address"
-                    className="input-field"
-                    rows={3}
-                    placeholder="Enter your residential address"
-                  />
-                  <ErrorMessage name="address" component="div" className="text-error text-sm mt-1" />
-                </div>
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
 
-                <div className="form-group">
-                  <label htmlFor="contactNumber" className="form-label">Contact Number</label>
-                  <Field
-                    type="text"
-                    id="contactNumber"
-                    name="contactNumber"
-                    className="input-field"
-                    placeholder="Enter your contact number"
-                  />
-                  <ErrorMessage name="contactNumber" component="div" className="text-error text-sm mt-1" />
-                </div>
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (validateForm()) {
+      await handleRegistrationSubmit(formData);
+    }
+  };
+
+  // Add handleChange function to update formData state
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
+  const renderRegistrationForm = () => {
+    return (
+      <div className="animate-fade-in">
+        <h2 className="text-2xl font-bold text-primary-700 mb-2">Complete Registration</h2>
+        <p className="mb-6 text-neutral-600">
+          Please provide your personal and vehicle details to complete the registration.
+        </p>
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div className="bg-primary-50 p-4 rounded-lg mb-6">
+            <h3 className="text-lg font-semibold text-primary-700 mb-4">Personal Information</h3>
+            <div className="space-y-4">
+              <div className="form-group">
+                <label htmlFor="email" className="form-label">Email</label>
+                <input
+                  type="email"
+                  id="email"
+                  name="email"
+                  className="input-field"
+                  placeholder="Enter your email"
+                  value={formData.email}
+                  onChange={handleChange}
+                />
+                {errors.email && <div className="text-error text-sm mt-1">{errors.email}</div>}
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="firstName" className="form-label">First Name</label>
+                <input
+                  type="text"
+                  id="firstName"
+                  name="firstName"
+                  className="input-field"
+                  placeholder="Enter your first name"
+                  value={formData.firstName}
+                  onChange={handleChange}
+                />
+                {errors.firstName && <div className="text-error text-sm mt-1">{errors.firstName}</div>}
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="lastName" className="form-label">Last Name</label>
+                <input
+                  type="text"
+                  id="lastName"
+                  name="lastName"
+                  className="input-field"
+                  placeholder="Enter your last name"
+                  value={formData.lastName}
+                  onChange={handleChange}
+                />
+                {errors.lastName && <div className="text-error text-sm mt-1">{errors.lastName}</div>}
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="nic" className="form-label">NIC Number</label>
+                <input
+                  type="text"
+                  id="nic"
+                  name="nic"
+                  className="input-field"
+                  placeholder="Enter your NIC number"
+                  value={formData.nic}
+                  onChange={handleChange}
+                />
+                {errors.nic && <div className="text-error text-sm mt-1">{errors.nic}</div>}
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="address" className="form-label">Residential Address</label>
+                <textarea
+                  id="address"
+                  name="address"
+                  className="input-field"
+                  rows={3}
+                  placeholder="Enter your residential address"
+                  value={formData.address}
+                  onChange={handleChange}
+                />
+                {errors.address && <div className="text-error text-sm mt-1">{errors.address}</div>}
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="contactNumber" className="form-label">Contact Number</label>
+                <input
+                  type="text"
+                  id="contactNumber"
+                  name="contactNumber"
+                  className="input-field"
+                  placeholder="Enter your contact number"
+                  value={formData.contactNumber}
+                  onChange={handleChange}
+                />
+                {errors.contactNumber && <div className="text-error text-sm mt-1">{errors.contactNumber}</div>}
               </div>
             </div>
+          </div>
 
-            <div className="bg-primary-50 p-4 rounded-lg">
-              <h3 className="text-lg font-semibold text-primary-700 mb-4">Vehicle Information</h3>
-              <div className="space-y-4">
-                <div className="form-group">
-                  <label htmlFor="vehicleNumber" className="form-label">Vehicle Registration Number</label>
-                  <Field
-                    type="text"
-                    id="vehicleNumber"
-                    name="vehicleNumber"
-                    className="input-field"
-                    placeholder="e.g., KL-7896"
-                  />
-                  <ErrorMessage name="vehicleNumber" component="div" className="text-error text-sm mt-1" />
-                </div>
+          <div className="bg-primary-50 p-4 rounded-lg">
+            <h3 className="text-lg font-semibold text-primary-700 mb-4">Vehicle Information</h3>
+            <div className="space-y-4">
+              <div className="form-group">
+                <label htmlFor="vehicleNumber" className="form-label">Vehicle Registration Number</label>
+                <input
+                  type="text"
+                  id="vehicleNumber"
+                  name="vehicleNumber"
+                  className="input-field"
+                  placeholder="e.g., KL-7896"
+                  value={formData.vehicleNumber}
+                  onChange={handleChange}
+                />
+                {errors.vehicleNumber && <div className="text-error text-sm mt-1">{errors.vehicleNumber}</div>}
+              </div>
 
-                <div className="form-group">
-                  <label htmlFor="chassisNumber" className="form-label">Chassis Number</label>
-                  <Field
-                    type="text"
-                    id="chassisNumber"
-                    name="chassisNumber"
-                    className="input-field"
-                    placeholder="Enter chassis number"
-                  />
-                  <ErrorMessage name="chassisNumber" component="div" className="text-error text-sm mt-1" />
-                </div>
+              <div className="form-group">
+                <label htmlFor="chassisNumber" className="form-label">Chassis Number</label>
+                <input
+                  type="text"
+                  id="chassisNumber"
+                  name="chassisNumber"
+                  className="input-field"
+                  placeholder="Enter chassis number"
+                  value={formData.chassisNumber}
+                  onChange={handleChange}
+                />
+                {errors.chassisNumber && <div className="text-error text-sm mt-1">{errors.chassisNumber}</div>}
+              </div>
 
-                <div className="form-group">
-                  <label htmlFor="vehicleType" className="form-label">Vehicle Type</label>
-                  <Field
-                    as="select"
-                    id="vehicleType"
-                    name="vehicleType"
-                    className="input-field"
-                  >
-                    <option value="">Select vehicle type</option>
-                    {Object.values(VehicleType).map((type) => (
-                      <option key={type} value={type}>{type}</option>
-                    ))}
-                  </Field>
-                  <ErrorMessage name="vehicleType" component="div" className="text-error text-sm mt-1" />
-                </div>
+              <div className="form-group">
+                <label htmlFor="vehicleType" className="form-label">Vehicle Type</label>
+                <select
+                  id="vehicleType"
+                  name="vehicleType"
+                  className="input-field"
+                  value={formData.vehicleType}
+                  onChange={handleChange}
+                >
+                  <option value="">Select vehicle type</option>
+                  {Object.values(VehicleType).map((type) => (
+                    <option key={type} value={type}>{type}</option>
+                  ))}
+                </select>
+                {errors.vehicleType && <div className="text-error text-sm mt-1">{errors.vehicleType}</div>}
+              </div>
 
-                <div className="form-group">
-                  <label htmlFor="fuelType" className="form-label">Fuel Type</label>
-                  <Field
-                    as="select"
-                    id="fuelType"
-                    name="fuelType"
-                    className="input-field"
-                  >
-                    <option value="">Select fuel type</option>
-                    {Object.values(FuelType).map((type) => (
-                      <option key={type} value={type}>{type}</option>
-                    ))}
-                  </Field>
-                  <ErrorMessage name="fuelType" component="div" className="text-error text-sm mt-1" />
-                </div>
+              <div className="form-group">
+                <label htmlFor="fuelType" className="form-label">Fuel Type</label>
+                <select
+                  id="fuelType"
+                  name="fuelType"
+                  className="input-field"
+                  value={formData.fuelType}
+                  onChange={handleChange}
+                >
+                  <option value="">Select fuel type</option>
+                  {Object.values(FuelType).map((type) => (
+                    <option key={type} value={type}>{type}</option>
+                  ))}
+                </select>
+                {errors.fuelType && <div className="text-error text-sm mt-1">{errors.fuelType}</div>}
               </div>
             </div>
+          </div>
 
-            <button
-              type="submit"
-              className="btn-primary w-full mt-6"
-              disabled={isSubmitting || isLoading}
-            >
-              {isSubmitting || isLoading ? (
-                <span className="flex items-center justify-center">
-                  <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                  </svg>
-                  Processing...
-                </span>
-              ) : (
-                'Complete Registration'
-              )}
-            </button>
-          </Form>
-        )}
-      </Formik>
-    </div>
-  );
+          <button
+            type="submit"
+            className="btn-primary w-full mt-6"
+            disabled={isLoading}
+          >
+            {isLoading ? 'Processing...' : 'Complete Registration'}
+          </button>
+        </form>
+      </div>
+    );
+  };
 
   const getCurrentStepComponent = () => {
     switch (currentStep) {
