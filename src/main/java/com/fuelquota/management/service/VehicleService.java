@@ -43,11 +43,7 @@ public class VehicleService {
                 .orElseThrow(
                         () -> new IllegalArgumentException("Owner not found with NIC: " + vehicleDto.getOwnerNic()));
 
-        // Validate vehicle information with traffic department
-        boolean isValid = trafficDepartmentService.validateVehicleInfo(vehicleDto, owner.getNic());
-        if (!isValid) {
-            throw new IllegalArgumentException("Vehicle information doesn't match with traffic department records");
-        }
+        System.out.println("VehicleRegistrationDto: " + vehicleDto);
 
         Vehicle vehicle = new Vehicle();
         vehicle.setVehicleNumber(vehicleDto.getVehicleNumber());
@@ -56,6 +52,8 @@ public class VehicleService {
         vehicle.setFuelType(vehicleDto.getFuelType());
         vehicle.setOwner(owner);
         vehicle.setVerified(true);
+
+        System.out.print(vehicle);
 
         return vehicleRepository.save(vehicle);
     }

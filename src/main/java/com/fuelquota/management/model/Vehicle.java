@@ -1,10 +1,14 @@
 package com.fuelquota.management.model;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Entity
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class Vehicle {
 
     @Id
@@ -22,7 +26,7 @@ public class Vehicle {
     private VehicleType vehicleType;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+   @Column(nullable = false)
     private FuelType fuelType;
 
     @Column(nullable = false)
@@ -35,7 +39,7 @@ public class Vehicle {
     public enum VehicleType {
         MOTORCYCLE, 
         THREE_WHEELER, 
-        CAR, 
+        Car, 
         VAN, 
         BUS, 
         LORRY, 

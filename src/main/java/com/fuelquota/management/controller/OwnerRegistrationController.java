@@ -153,7 +153,7 @@ public class OwnerRegistrationController {
         }
     }
 
-    @PostMapping("/validate-otp")//* */
+    @PostMapping("/validate-otp") // * */
     public ResponseEntity<?> validateOtp(@RequestParam String email, @RequestParam String otp) {
         try {
             boolean verified = ownerService.verifyEmail(email, otp);
@@ -184,21 +184,21 @@ public class OwnerRegistrationController {
             // Save owner information in the database
             Owner owner = ownerService.storeOwner(ownerDto);
 
-            // Create and initialize VehicleRegistrationDto from ownerDto
-            VehicleRegistrationDto vehicleDto = new VehicleRegistrationDto();
-            vehicleDto.setOwnerNic(ownerDto.getNic());
-            vehicleDto.setVehicleNumber(ownerDto.getVehicleNumber());
-            vehicleDto.setChassisNumber(ownerDto.getChassisNumber());
-            vehicleDto.setVehicleType(ownerDto.getVehicleType());
-            vehicleDto.setFuelType(ownerDto.getFuelType());
+            // Extract vehicle details from the nested vehicle object in ownerDto
+            VehicleRegistrationDto vehicleDto = ownerDto.getVehicle();
 
+            // Set the owner NIC in the vehicle DTO
+            vehicleDto.setOwnerNic(owner.getNic());
+            System.out.print(vehicleDto.getOwnerNic());
+         
             // Save vehicle information in the database
             Vehicle vehicle = vehicleService.registerVehicle(vehicleDto);
+            
 
             // Prepare response
             Map<String, Object> response = new HashMap<>();
             response.put("message", "Owner and vehicle information stored successfully.");
-            response.put("ownerId", owner.getId());
+            response.put("ownerId", owner.getId()); // Include ownerId in the response
             response.put("vehicleId", vehicle.getId());
 
             return ResponseEntity.status(HttpStatus.CREATED).body(response);
@@ -213,5 +213,4 @@ public class OwnerRegistrationController {
         }
     }
 
-    
 }

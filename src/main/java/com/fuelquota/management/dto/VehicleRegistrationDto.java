@@ -11,16 +11,16 @@ public class VehicleRegistrationDto {
 
     @NotBlank(message = "Vehicle number is required")
     private String vehicleNumber;
-    
+
     @NotBlank(message = "Chassis number is required")
     private String chassisNumber;
-    
+
     @NotNull(message = "Vehicle type is required")
     private VehicleType vehicleType;
-    
+
     @NotNull(message = "Fuel type is required")
     private FuelType fuelType;
-    
+
     @NotBlank(message = "Owner NIC is required")
     private String ownerNic;
 }
