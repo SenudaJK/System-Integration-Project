@@ -21,7 +21,7 @@ export interface Vehicle {
 }
 
 export enum VehicleType {
-  CAR = "Car",
+  CAR = "CAR",
   VAN = "Van",
   MOTORCYCLE = "Motorcycle",
   THREE_WHEELER = "Three Wheeler",
@@ -33,7 +33,7 @@ export enum VehicleType {
 export enum FuelType {
   PETROL_92 = "Petrol 92",
   PETROL_95 = "Petrol 95",
-  DIESEL = "Diesel",
+  DIESEL = "DIESEL",
   SUPER_DIESEL = "Super Diesel",
   KEROSENE = "Kerosene"
 }

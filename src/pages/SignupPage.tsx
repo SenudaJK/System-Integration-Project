@@ -33,7 +33,7 @@ const registrationSchema = Yup.object().shape({
   contactNumber: Yup.string()
     .matches(/^(\+94|0)[0-9]{9}$/, 'Invalid phone number format')
     .required('Contact number is required'),
-  
+
   // Vehicle Info
   vehicleNumber: Yup.string()
     //.matches(/^[A-Z]{2,3}-\d{4}$/, 'Invalid vehicle number format (e.g., KL-7896)')
@@ -58,7 +58,6 @@ const SignupPage: React.FC = () => {
 
   // Move these states to the top level of the component
   const [formData, setFormData] = useState({
-    email: '',
     firstName: '',
     lastName: '',
     nic: '',
@@ -89,7 +88,7 @@ const SignupPage: React.FC = () => {
       );
     }
   };
-  
+
   const handleOtpVerify = async (otp: string) => {
     try {
       // Call the validate OTP API with email and otp as query parameters
@@ -107,7 +106,7 @@ const SignupPage: React.FC = () => {
       );
     }
   };
-  
+
   const handleRegistrationSubmit = async (values: any) => {
     try {
       // Combine owner and vehicle details into a single payload
@@ -115,13 +114,16 @@ const SignupPage: React.FC = () => {
         nic: values.nic,
         firstName: values.firstName,
         lastName: values.lastName,
-        email: values.email,
+        email:email,
         phone: values.contactNumber,
         address: values.address,
-        vehicleNumber: values.vehicleNumber,
-        chassisNumber: values.chassisNumber,
-        vehicleType: values.vehicleType,
-        fuelType: values.fuelType,
+        vehicle: {
+          vehicleNumber: values.vehicleNumber,
+          chassisNumber: values.chassisNumber,
+          vehicleType: values.vehicleType,
+          fuelType: values.fuelType,
+          ownerNic: values.nic, // Ensure owner NIC is included in the vehicle object
+        },
       };
 
       console.log('Payload:', payload);
@@ -141,7 +143,7 @@ const SignupPage: React.FC = () => {
       }
     }
   };
-  
+
   const handleBack = () => {
     if (currentStep === SignupStep.OTP) {
       setCurrentStep(SignupStep.EMAIL);
@@ -151,7 +153,6 @@ const SignupPage: React.FC = () => {
   const validateForm = () => {
     const newErrors: { [key: string]: string } = {};
 
-    if (!formData.email.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) newErrors.email = 'Invalid email format';
     if (!formData.firstName) newErrors.firstName = 'First name is required';
     if (!formData.lastName) newErrors.lastName = 'Last name is required';
     if (!formData.nic.match(/^(\d{9}[vVxX]|\d{12})$/)) newErrors.nic = 'Invalid NIC format';
@@ -193,7 +194,7 @@ const SignupPage: React.FC = () => {
           <div className="bg-primary-50 p-4 rounded-lg mb-6">
             <h3 className="text-lg font-semibold text-primary-700 mb-4">Personal Information</h3>
             <div className="space-y-4">
-              <div className="form-group">
+              {/* <div className="form-group">
                 <label htmlFor="email" className="form-label">Email</label>
                 <input
                   type="email"
@@ -205,7 +206,7 @@ const SignupPage: React.FC = () => {
                   onChange={handleChange}
                 />
                 {errors.email && <div className="text-error text-sm mt-1">{errors.email}</div>}
-              </div>
+              </div> */}
 
               <div className="form-group">
                 <label htmlFor="firstName" className="form-label">First Name</label>
@@ -362,15 +363,15 @@ const SignupPage: React.FC = () => {
     switch (currentStep) {
       case SignupStep.EMAIL:
         return (
-          <EmailForm 
-            onSubmit={handleEmailSubmit} 
+          <EmailForm
+            onSubmit={handleEmailSubmit}
             isSignup={true}
             isLoading={isLoading}
           />
         );
       case SignupStep.OTP:
         return (
-          <OTPVerification 
+          <OTPVerification
             email={email}
             onVerify={handleOtpVerify}
             onBack={handleBack}
@@ -398,7 +399,7 @@ const SignupPage: React.FC = () => {
             Ministry of Energy, Government of Sri Lanka
           </p>
         </div>
-        
+
         <div className="mt-6">
           {getCurrentStepComponent()}
         </div>
