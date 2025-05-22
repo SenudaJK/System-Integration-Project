@@ -16,6 +16,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Profile;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -43,6 +44,9 @@ public class FuelDistributionService {
     @Autowired
     private ObjectMapper objectMapper;
     
+    @Autowired(required = false)
+    private ApplicationEventPublisher eventPublisher;
+    
     @Value("${azure.servicebus.connection-string:}")
     private String serviceBusConnectionString;
     
@@ -65,7 +69,7 @@ public class FuelDistributionService {
         
         FuelDistribution saved = distributionRepository.save(distribution);
         
-        // Notify about the distribution (with Azure Service Bus in production)
+        // Notify about the distribution
         notifyDistribution(saved);
         
         return saved;
@@ -125,13 +129,24 @@ public class FuelDistributionService {
                    distribution.getFuelStation().getId(),
                    distribution.getFuelAmount(),
                    distribution.getFuelType());
-        
-        // Implementation would depend on your inventory model
     }
     
-    // Azure Service Bus integration for production environment
-    @Profile("azure")
+    /**
+     * Central notification method that detects environment and routes to appropriate implementation
+     */
     private void notifyDistribution(FuelDistribution distribution) {
+        if ("azure".equals(System.getProperty("spring.profiles.active"))) {
+            notifyDistributionAzure(distribution);
+        } else {
+            notifyDistributionStandard(distribution);
+        }
+    }
+    
+    /**
+     * Azure Service Bus integration for production environment
+     */
+    @Profile("azure")
+    private void notifyDistributionAzure(FuelDistribution distribution) {
         logger.info("Sending distribution notification to Azure Service Bus: {}", distribution.getDistributionReference());
         
         try {
@@ -169,9 +184,69 @@ public class FuelDistributionService {
         }
     }
     
-    // Non-Azure notification for local development
-    @Profile("!azure")
-    private void notifyDistribution(FuelDistribution distribution) {
-        logger.info("Local development: Distribution created - {}", distribution.getDistributionReference());
+    /**
+     * Standard notification implementation using Spring's ApplicationEventPublisher
+     * This works in any environment without Azure dependencies
+     */
+    private void notifyDistributionStandard(FuelDistribution distribution) {
+        logger.info("Standard notification: Distribution created - {}", distribution.getDistributionReference());
+        
+        try {
+            // Create notification data
+            Map<String, Object> notificationData = new HashMap<>();
+            notificationData.put("distributionId", distribution.getId());
+            notificationData.put("stationId", distribution.getFuelStation().getId());
+            notificationData.put("stationName", distribution.getFuelStation().getName());
+            notificationData.put("fuelType", distribution.getFuelType().name());
+            notificationData.put("amount", distribution.getFuelAmount());
+            notificationData.put("reference", distribution.getDistributionReference());
+            notificationData.put("timestamp", distribution.getDistributionDate().toString());
+            
+            // Option 1: Use ApplicationEventPublisher if available
+            if (eventPublisher != null) {
+                // Publish event to the Spring application context
+                eventPublisher.publishEvent(new FuelDistributionEvent(this, distribution, notificationData));
+                logger.info("Published distribution event to application context");
+            }
+            
+            // Option 2: Log the notification (fallback approach)
+            logger.info("Distribution notification data: {}", notificationData);
+            
+            // Option 3: You could implement other notification methods here:
+            // - Send an email
+            // - Call a webhook
+            // - Write to a message queue (e.g., RabbitMQ)
+            // - Store in a notifications table in the database
+            
+        } catch (Exception e) {
+            logger.error("Error processing standard notification for distribution", e);
+        }
+    }
+    
+    /**
+     * Simple event class for Spring's application event system
+     */
+    public static class FuelDistributionEvent {
+        private final Object source;
+        private final FuelDistribution distribution;
+        private final Map<String, Object> data;
+        
+        public FuelDistributionEvent(Object source, FuelDistribution distribution, Map<String, Object> data) {
+            this.source = source;
+            this.distribution = distribution;
+            this.data = data;
+        }
+        
+        public Object getSource() {
+            return source;
+        }
+        
+        public FuelDistribution getDistribution() {
+            return distribution;
+        }
+        
+        public Map<String, Object> getData() {
+            return data;
+        }
     }
 }
