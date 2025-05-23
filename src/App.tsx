@@ -11,6 +11,7 @@ import FuelHistoryPage from './pages/FuelHistoryPage';
 import Header from './components/layout/Header';
 import Footer from './components/layout/Footer';
 import { AuthProvider } from './contexts/AuthContext';
+import QrCodePage from './pages/QrCodePage';
 
 function App() {
   return (
@@ -25,6 +26,7 @@ function App() {
               <Route path="/signup" element={<SignupPage />} />
                <Route path="/dashboard" element={<DashboardPage />} /> 
               <Route path="/fuel-history" element={<FuelHistoryPage />} />
+               <Route path="/qr-code" element={<QrCodePage />} />
             </Routes>
           </main>
           <Footer />

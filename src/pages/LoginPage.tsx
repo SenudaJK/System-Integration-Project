@@ -5,6 +5,7 @@ import { useAuth } from '../contexts/AuthContext';
 import EmailForm from '../components/auth/EmailForm';
 import OTPVerification from '../components/auth/OTPVerification';
 import { toast } from 'react-toastify';
+import axios from 'axios';
 
 enum LoginStep {
   EMAIL,
@@ -24,26 +25,44 @@ const LoginPage: React.FC = () => {
   
   const handleEmailSubmit = async (email: string) => {
     try {
-      await login(email);
+      // Call the backend API to send OTP
+      const response = await axios.post('http://localhost:8080/api/register/send-otpForLogin', null, {
+        params: { email },
+      });
+
+      // If successful, proceed to OTP verification step
       setEmail(email);
       setCurrentStep(LoginStep.OTP);
-      toast.success('OTP sent to your email');
+      toast.success(response.data.message || 'OTP sent to your email');
     } catch (error) {
-      toast.error('Failed to send OTP. Please try again.');
+      console.error('Failed to send OTP:', error);
+      if (axios.isAxiosError(error) && error.response?.status === 400) {
+        toast.error(error.response.data.error || 'Failed to send OTP. Please try again.');
+      } else {
+        toast.error('An unexpected error occurred. Please try again.');
+      }
     }
   };
   
   const handleOtpVerify = async (otp: string) => {
     try {
-      const success = await verifyOtp(email, otp);
-      if (success) {
-        toast.success('Login successful!');
-        navigate('/dashboard');
-      } else {
-        toast.error('Invalid OTP. Please try again.');
-      }
+      // Call the backend API to validate OTP
+      const response = await axios.post('http://localhost:8080/api/register/validate-otpLogin', null, {
+        params: { email, otp },
+      });
+
+      console.log('OTP Verification Response:', response.data);
+
+      // If successful, navigate to the QR Code page with the email
+      toast.success(response.data.message || 'Login successful!');
+      navigate('/qr-code', { state: { email } });
     } catch (error) {
-      toast.error('Verification failed. Please try again.');
+      console.error('Failed to verify OTP:', error);
+      if (axios.isAxiosError(error) && error.response?.status === 400) {
+        toast.error(error.response.data.error || 'Invalid OTP. Please try again.');
+      } else {
+        toast.error('An unexpected error occurred. Please try again.');
+      }
     }
   };
   
