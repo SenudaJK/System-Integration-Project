@@ -1,25 +1,60 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Plus } from 'lucide-react';
 import Button from '../../components/ui/Button';
 import Modal from '../../components/ui/Modal';
-import { distributionApi, FuelDistribution } from '../../services/api';
+import { distributionApi, adminApi, FuelDistribution } from '../../services/api';
 
 interface CreateDistributionProps {
   onDistributionCreated: (newDistribution: FuelDistribution) => void;
+}
+
+interface FuelStation {
+  id: string;
+  name: string;
+  location: string;
+  status: string;
+  city?: string;
+  address?: string;
 }
 
 const CreateDistribution: React.FC<CreateDistributionProps> = ({ onDistributionCreated }) => {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  
-  // Form state
+  const [fuelStations, setFuelStations] = useState<FuelStation[]>([]);
+  const [loadingStations, setLoadingStations] = useState(false);
+
   const [createForm, setCreateForm] = useState({
     fuelStationId: '',
     fuelAmount: '',
     fuelType: 'PETROL',
     notes: ''
   });
+
+  useEffect(() => {
+    if (showCreateModal) {
+      fetchFuelStations();
+    }
+  }, [showCreateModal]);
+
+  const fetchFuelStations = async () => {
+    try {
+      setLoadingStations(true);
+      const stations = await adminApi.getFuelStations();
+      if (!Array.isArray(stations)) {
+        throw new Error('Invalid response: stations is not an array');
+      }
+      const activeStations = stations.filter((station: FuelStation) => 
+        station.status === 'ACTIVE' || station.status === 'APPROVED'
+      );
+      setFuelStations(activeStations);
+    } catch (err) {
+      console.error('Failed to fetch fuel stations:', err);
+      setError('Failed to load fuel stations. Please try again.');
+    } finally {
+      setLoadingStations(false);
+    }
+  };
 
   const handleCreateDistribution = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -52,7 +87,7 @@ const CreateDistribution: React.FC<CreateDistributionProps> = ({ onDistributionC
       setShowCreateModal(false);
       resetForm();
       
-      // Show success message (you can implement a toast notification here)
+      // Show success message
       alert('Distribution created successfully!');
     } catch (err: any) {
       setError(err.message || 'Failed to create distribution. Please try again.');
@@ -71,6 +106,11 @@ const CreateDistribution: React.FC<CreateDistributionProps> = ({ onDistributionC
     setCreateForm(prev => ({ ...prev, [field]: value }));
     // Clear error when user starts typing
     if (error) setError('');
+  };
+
+  const getSelectedStationName = () => {
+    const selectedStation = fuelStations.find(station => station.id === createForm.fuelStationId);
+    return selectedStation ? `${selectedStation.name} - ${selectedStation.location}` : '';
   };
 
   return (
@@ -104,21 +144,40 @@ const CreateDistribution: React.FC<CreateDistributionProps> = ({ onDistributionC
           
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Fuel Station ID <span className="text-red-500">*</span>
+              Fuel Station <span className="text-red-500">*</span>
             </label>
-            <input
-              type="number"
-              required
-              min="1"
-              value={createForm.fuelStationId}
-              onChange={(e) => handleInputChange('fuelStationId', e.target.value)}
-              className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              placeholder="Enter station ID (e.g., 42)"
-              disabled={isSubmitting}
-            />
+            {loadingStations ? (
+              <div className="w-full border border-gray-300 rounded-md px-3 py-2 bg-gray-50 flex items-center">
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600 mr-2"></div>
+                Loading stations...
+              </div>
+            ) : (
+              <select
+                required
+                value={createForm.fuelStationId}
+                onChange={(e) => handleInputChange('fuelStationId', e.target.value)}
+                className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                disabled={isSubmitting}
+              >
+                <option value="">Select a fuel station</option>
+                {fuelStations.map((station) => (
+                  <option key={station.id} value={station.id}>
+                    {station.name} - {station.location}
+                  </option>
+                ))}
+              </select>
+            )}
             <p className="text-xs text-gray-500 mt-1">
-              Enter the ID of the fuel station to receive the distribution
+              {createForm.fuelStationId 
+                ? `Selected: ${getSelectedStationName()}` 
+                : 'Choose the fuel station to receive the distribution'
+              }
             </p>
+            {fuelStations.length === 0 && !loadingStations && (
+              <p className="text-xs text-red-500 mt-1">
+                No active fuel stations available. Please contact administrator.
+              </p>
+            )}
           </div>
           
           <div>
@@ -189,7 +248,7 @@ const CreateDistribution: React.FC<CreateDistributionProps> = ({ onDistributionC
             </Button>
             <Button 
               type="submit"
-              disabled={isSubmitting}
+              disabled={isSubmitting || fuelStations.length === 0}
               className="bg-blue-600 hover:bg-blue-700"
             >
               {isSubmitting ? (
