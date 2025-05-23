@@ -40,6 +40,16 @@ public class FuelStationController {
         return ResponseEntity.ok(fuelStations);
     }
 
+    @PutMapping("/{id}")
+    public ResponseEntity<FuelStationDTO> updateFuelStation(@PathVariable Long id,
+                                                            @Valid @RequestBody FuelStationDTO fuelStationDTO) {
+        FuelStationDTO updatedFuelStation = fuelStationService.updateFuelStation(id, fuelStationDTO);
+        return ResponseEntity.ok(updatedFuelStation);
+    }
+
+
+
+
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<String> handleIllegalArgumentException(IllegalArgumentException ex) {
         return new ResponseEntity<>(ex.getMessage(), HttpStatus.BAD_REQUEST);
