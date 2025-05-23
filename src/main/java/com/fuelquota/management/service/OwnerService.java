@@ -145,6 +145,10 @@ public class OwnerService {
         return ownerRepository.findByEmail(email);
     }
 
+    public Owner findOwnerByEmail(String email) {
+        return ownerRepository.findByEmail(email).orElse(null);
+    }
+
     @Transactional(readOnly = true)
     public boolean checkIfEmailExists(String email) {
         return ownerRepository.findByEmail(email).isPresent();

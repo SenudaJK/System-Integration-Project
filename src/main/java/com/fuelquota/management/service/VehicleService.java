@@ -73,6 +73,10 @@ public class VehicleService {
         return vehicleRepository.findByOwnerNic(ownerNic);
     }
 
+    public List<Vehicle> findVehiclesByOwnerId(Long ownerId) {
+        return vehicleRepository.findByOwnerId(ownerId);
+    }
+
     public VehicleValidationResponse fetchVehicleDetailsByChassis(String apiUrl) {
         // Fetch vehicle details from the third-party API
         ResponseEntity<VehicleValidationResponse> response = restTemplate.getForEntity(apiUrl, VehicleValidationResponse.class);

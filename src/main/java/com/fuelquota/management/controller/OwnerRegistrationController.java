@@ -169,6 +169,7 @@ public class OwnerRegistrationController {
     public ResponseEntity<?> storeOwner(@Valid @RequestBody OwnerRegistrationDto ownerDto) {
         try {
             // Save owner information in the database
+            
             Owner owner = ownerService.storeOwner(ownerDto);
 
             // Extract vehicle details from the nested vehicle object in ownerDto

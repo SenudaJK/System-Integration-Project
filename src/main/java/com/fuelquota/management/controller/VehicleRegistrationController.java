@@ -1,6 +1,7 @@
 package com.fuelquota.management.controller;
 
 import com.fuelquota.management.dto.VehicleRegistrationDto;
+import com.fuelquota.management.model.Owner;
 import com.fuelquota.management.model.Vehicle;
 import com.fuelquota.management.service.VehicleService;
 import com.fuelquota.management.service.OwnerService;
@@ -11,6 +12,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -57,7 +59,7 @@ public class VehicleRegistrationController {
         }
     }
 
-    @GetMapping("/validate-vehicle-by-chassis") /**/ 
+    @GetMapping("/validate-vehicle-by-chassis") /**/
     public ResponseEntity<?> validateVehicleByChassis(@RequestParam String chassisNumber,
             @RequestParam String vehicleNumber, @RequestParam String nic, @RequestParam String fuelType,
             @RequestParam String vehicleType) {
@@ -91,4 +93,41 @@ public class VehicleRegistrationController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
         }
     }
+
+    @GetMapping("/vehicle-info-by-owner-email")
+    public ResponseEntity<?> getVehicleInfoByOwnerEmail(@RequestParam String email) {
+        try {
+            // Step 1: Fetch the owner by email
+            Owner owner = ownerService.findOwnerByEmail(email);
+            if (owner == null) {
+                Map<String, String> errorResponse = new HashMap<>();
+                errorResponse.put("error", "Owner not found for the provided email.");
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
+            }
+
+            // Step 2: Fetch vehicles by owner ID
+            List<Vehicle> vehicles = vehicleService.findVehiclesByOwnerId(owner.getId());
+            if (vehicles.isEmpty()) {
+                Map<String, String> errorResponse = new HashMap<>();
+                errorResponse.put("error", "No vehicles found for the owner.");
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
+            }
+
+            // Step 3: Prepare the response
+            List<Map<String, Object>> vehicleInfoList = new ArrayList<>();
+            for (Vehicle vehicle : vehicles) {
+                Map<String, Object> vehicleInfo = new HashMap<>();
+                vehicleInfo.put("vehicleNumber", vehicle.getVehicleNumber());
+                vehicleInfo.put("qrCode", vehicle.getQrCode());
+                vehicleInfoList.add(vehicleInfo);
+            }
+
+            return ResponseEntity.ok(vehicleInfoList);
+        } catch (Exception e) {
+            Map<String, String> errorResponse = new HashMap<>();
+            errorResponse.put("error", "An unexpected error occurred.");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
+        }
+    }
+
 }
