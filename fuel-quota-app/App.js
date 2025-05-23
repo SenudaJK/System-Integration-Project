@@ -14,6 +14,7 @@ import RegisterScreen from './src/screens/RegisterScreen';
 import LoginScreen from './src/screens/LoginScreen';
 import ProfileScreen from './src/screens/ProfileScreen';
 import HomeScreen from './src/screens/HomeScreen';
+import FuelEntryScreen from './src/screens/FuelEntryScreen';
 
 const Stack = createStackNavigator();
 
@@ -77,6 +78,11 @@ export default function App() {
                 name="Home"
                 component={HomeScreen}
                 options={{ headerShown: false }}
+              />
+              <Stack.Screen
+                name="FuelEntry"
+                component={FuelEntryScreen}
+                options={{ title: 'Fuel Entry' }}
               />
               <Stack.Screen
                 name="Profile"
