@@ -10,8 +10,8 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { apiService } from "../services/apiService";
-import { useAuth } from "../contexts/AuthContext";
-import { useLoading } from "../contexts/LoadingContext";
+import { useAuth } from "../contexts/Authcontext";
+import { useLoading } from "../contexts/Loadingcontext";
 
 export default function TransactionHistoryScreen() {
     const [transactions, setTransactions] = useState([]);

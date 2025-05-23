@@ -18,7 +18,7 @@ import Animated, {
     interpolate,
 } from "react-native-reanimated";
 import { apiService } from "../services/apiService";
-import { useLoading } from "../contexts/LoadingContext";
+import { useLoading } from "../contexts/Loadingcontext";
 
 const { width, height } = Dimensions.get("window");
 

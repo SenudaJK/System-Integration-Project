@@ -16,8 +16,8 @@ import TransactionHistoryScreen from "./src/screens/TransactionHistoryScreen"; /
 import ProfileScreen from "./src/screens/ProfileScreen";
 
 // Import contexts
-import { AuthProvider } from "./src/contexts/AuthContext";
-import { LoadingProvider } from "./src/contexts/LoadingContext";
+import { AuthProvider } from "./src/contexts/Authcontext";
+import { LoadingProvider } from "./src/contexts/Loadingcontext";
 
 const Stack = createStackNavigator();
 

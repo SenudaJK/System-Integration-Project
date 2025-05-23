@@ -19,8 +19,8 @@ import Animated, {
     withTiming,
 } from "react-native-reanimated";
 import { apiService } from "../services/apiService";
-import { useLoading } from "../contexts/LoadingContext";
-import { useAuth } from "../contexts/AuthContext";
+import { useLoading } from "../contexts/Loadingcontext";
+import { useAuth } from "../contexts/Authcontext";
 import QuotaCard from "../components/QuotaCard";
 
 export default function FuelEntryScreen({ route, navigation }) {
@@ -112,7 +112,7 @@ export default function FuelEntryScreen({ route, navigation }) {
             Alert.alert(
                 "Transaction Failed",
                 error.response?.data?.message ||
-                    "Failed to process fuel transaction. Please try again."
+                "Failed to process fuel transaction. Please try again."
             );
         }
     };
@@ -223,7 +223,7 @@ export default function FuelEntryScreen({ route, navigation }) {
                                 style={[
                                     styles.quotaDisplayValue,
                                     getRemainingQuota() < 10 &&
-                                        styles.quotaDisplayWarning,
+                                    styles.quotaDisplayWarning,
                                 ]}
                             >
                                 {getRemainingQuota().toFixed(1)}L
@@ -259,7 +259,7 @@ export default function FuelEntryScreen({ route, navigation }) {
                             style={[
                                 styles.dispenseButton,
                                 (!fuelAmount || errors.fuelAmount) &&
-                                    styles.dispenseButtonDisabled,
+                                styles.dispenseButtonDisabled,
                             ]}
                             onPress={handleFuelDispense}
                             disabled={!fuelAmount || !!errors.fuelAmount}

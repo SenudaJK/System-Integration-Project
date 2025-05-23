@@ -10,7 +10,7 @@ import {
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons } from "@expo/vector-icons";
-import { useAuth } from "../contexts/AuthContext";
+import { useAuth } from "../contexts/Authcontext";
 
 export default function ProfileScreen({ navigation }) {
     const { user, logout } = useAuth();
@@ -85,19 +85,19 @@ export default function ProfileScreen({ navigation }) {
                         icon="business"
                         title="Station Name"
                         subtitle={user?.stationName || "Not specified"}
-                        onPress={() => {}}
+                        onPress={() => { }}
                     />
                     <ProfileItem
                         icon="location"
                         title="Station Address"
                         subtitle={user?.stationAddress || "Not specified"}
-                        onPress={() => {}}
+                        onPress={() => { }}
                     />
                     <ProfileItem
                         icon="document-text"
                         title="License Number"
                         subtitle={user?.licenseNumber || "Not specified"}
-                        onPress={() => {}}
+                        onPress={() => { }}
                     />
                 </View>
             </View>
@@ -132,7 +132,7 @@ export default function ProfileScreen({ navigation }) {
                         icon="phone-portrait"
                         title="Phone Number"
                         subtitle={user?.phone || "Not specified"}
-                        onPress={() => {}}
+                        onPress={() => { }}
                     />
                 </View>
             </View>

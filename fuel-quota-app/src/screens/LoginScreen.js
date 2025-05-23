@@ -19,8 +19,8 @@ import Animated, {
     withSpring,
     withTiming,
 } from "react-native-reanimated";
-import { useAuth } from "../contexts/AuthContext";
-import { useLoading } from "../contexts/LoadingContext";
+import { useAuth } from "../contexts/Authcontext";
+import { useLoading } from "../contexts/Loadingcontext";
 
 const { width, height } = Dimensions.get("window");
 

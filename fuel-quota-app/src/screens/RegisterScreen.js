@@ -12,8 +12,8 @@ import {
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons } from "@expo/vector-icons";
-import { useAuth } from "../contexts/AuthContext";
-import { useLoading } from "../contexts/LoadingContext";
+import { useAuth } from "../contexts/Authcontext";
+import { useLoading } from "../contexts/Loadingcontext";
 
 export default function RegisterScreen({ navigation }) {
     const [formData, setFormData] = useState({
@@ -137,6 +137,12 @@ export default function RegisterScreen({ navigation }) {
                                 />
                             </View>
                         </View>
+                        {(errors.firstName) && (
+                            <Text style={styles.errorText}>
+                                {errors.firstName}
+                            </Text>
+                        )}
+
                         <View style={styles.inputRow}>
                             <View style={[styles.inputContainer, { flex: 1 }]}>
                                 <Ionicons
@@ -158,9 +164,9 @@ export default function RegisterScreen({ navigation }) {
                                 />
                             </View>
                         </View>
-                        {(errors.firstName || errors.lastName) && (
+                        {(errors.lastName) && (
                             <Text style={styles.errorText}>
-                                {errors.firstName || errors.lastName}
+                                {errors.lastName}
                             </Text>
                         )}
 
