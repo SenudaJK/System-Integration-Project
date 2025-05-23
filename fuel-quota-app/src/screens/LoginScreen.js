@@ -43,18 +43,6 @@ export default function LoginScreen({ navigation }) {
         slideAnim.value = withSpring(0, { damping: 15 });
     }, []);
 
-    useEffect(() => {
-        if (isAuthenticated) {
-            navigation.replace('Home');
-        }
-    }, [isAuthenticated]);
-
-    const animatedStyle = useAnimatedStyle(() => {
-        return {
-            opacity: fadeAnim.value,
-            transform: [{ translateY: slideAnim.value }],
-        };
-    });
 
     const validateForm = () => {
         const newErrors = {};

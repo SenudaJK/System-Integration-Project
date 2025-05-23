@@ -104,15 +104,6 @@ export default function HomeScreen({ navigation }) {
         );
     };
 
-    const StatCard = ({ icon, title, value, color = '#4CAF50' }) => (
-        <View style={styles.statCard}>
-            <View style={[styles.statIcon, { backgroundColor: color }]}>
-                <Ionicons name={icon} size={24} color="#fff" />
-            </View>
-            <Text style={styles.statValue}>{value}</Text>
-            <Text style={styles.statTitle}>{title}</Text>
-        </View>
-    );
 
     return (
         <SafeAreaView style={styles.container}>
