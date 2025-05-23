@@ -13,6 +13,7 @@ import { LoadingProvider } from './src/contexts/LoadingContext';
 import RegisterScreen from './src/screens/RegisterScreen';
 import LoginScreen from './src/screens/LoginScreen';
 import ProfileScreen from './src/screens/ProfileScreen';
+import HomeScreen from './src/screens/HomeScreen';
 
 const Stack = createStackNavigator();
 
@@ -71,6 +72,11 @@ export default function App() {
                 name="Register"
                 component={RegisterScreen}
                 options={{ title: 'Register' }}
+              />
+              <Stack.Screen
+                name="Home"
+                component={HomeScreen}
+                options={{ headerShown: false }}
               />
               <Stack.Screen
                 name="Profile"
