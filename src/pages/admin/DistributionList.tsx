@@ -54,7 +54,6 @@ const DistributionList: React.FC<DistributionListProps> = ({
       subtitle={`${filteredDistributions.length} distributions found`}
       headerActions={
         <div className="flex flex-col sm:flex-row gap-3">
-          {/* Search */}
           <div className="relative">
             <input
               type="text"
@@ -64,8 +63,6 @@ const DistributionList: React.FC<DistributionListProps> = ({
               className="border border-gray-300 rounded-md px-3 py-2 text-sm w-64"
             />
           </div>
-          
-          {/* Filters */}
           <div className="flex gap-2">
             <select
               value={statusFilter}
@@ -74,7 +71,6 @@ const DistributionList: React.FC<DistributionListProps> = ({
             >
               <option value="ALL">All Status</option>
               <option value="PENDING">Pending</option>
-              <option value="IN_TRANSIT">In Transit</option>
               <option value="DELIVERED">Delivered</option>
               <option value="CANCELLED">Cancelled</option>
             </select>

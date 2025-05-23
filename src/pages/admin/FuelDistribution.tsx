@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import CreateDistribution from '../admin/CreateDistribution';
 import DistributionList from '../admin/DistributionList';
+import DistributionStats from '../admin/DistributionStats';
 import Card from '../../components/ui/Card';
 import { distributionApi, FuelDistribution as FuelDistributionType } from '../../services/api';
 
@@ -80,7 +81,7 @@ const FuelDistributions: React.FC = () => {
         </Card>
       </div>
 
-      {/* Distribution List Component */}
+      <DistributionStats distributions={distributions} />
       <DistributionList 
         distributions={distributions}
         isLoading={isLoading}
