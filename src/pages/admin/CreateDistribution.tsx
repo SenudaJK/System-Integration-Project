@@ -68,7 +68,6 @@ const CreateDistribution: React.FC<CreateDistributionProps> = ({ onDistributionC
     setError('');
     
     try {
-      // Validate form
       if (!createForm.fuelStationId || !createForm.fuelAmount) {
         setError('Please fill in all required fields');
         setIsSubmitting(false);
@@ -92,8 +91,6 @@ const CreateDistribution: React.FC<CreateDistributionProps> = ({ onDistributionC
       onDistributionCreated(newDistribution);
       setShowCreateModal(false);
       resetForm();
-      
-      // Show success message
       alert('Distribution created successfully!');
     } catch (err: any) {
       setError(err.message || 'Failed to create distribution. Please try again.');
@@ -110,7 +107,6 @@ const CreateDistribution: React.FC<CreateDistributionProps> = ({ onDistributionC
 
   const handleInputChange = (field: string, value: string) => {
     setCreateForm(prev => ({ ...prev, [field]: value }));
-    // Clear error when user starts typing
     if (error) setError('');
   };
 

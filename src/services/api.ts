@@ -153,14 +153,13 @@ export type Vehicle = {
   [key: string]: any; // Add other properties as needed
 };
 
-// Define the FuelStation type
 export type FuelStation = {
-  id: number; // Changed from string to number
+  id: number; 
   name: string;
   location: string;
   ownerName: string;
   contactNumber: string;
-  active: boolean; // Changed from status to active
+  active: boolean;
   createdAt: string;
 };
 

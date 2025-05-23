@@ -12,14 +12,17 @@ const FuelDistributions: React.FC = () => {
   useEffect(() => {
     fetchDistributions();
   }, []);
+
   const fetchDistributions = async () => {
     try {
       setIsLoading(true);
-      const data = await distributionApi.getRecentDistributions(10);
+      setError(''); // Clear previous errors
+      const data = await distributionApi.getRecentDistributions(50); // Increased limit
       setDistributions(data);
-    } catch (err) {
-      setError('Failed to load distributions');
+    } catch (err: any) {
+      setError('Failed to load distributions: ' + (err.message || 'Unknown error'));
       console.error(err);
+      setDistributions([]); // Ensure it's always an array
     } finally {
       setIsLoading(false);
     }
@@ -27,6 +30,12 @@ const FuelDistributions: React.FC = () => {
 
   const handleDistributionCreated = (newDistribution: FuelDistributionType) => {
     setDistributions([newDistribution, ...distributions]);
+  };
+
+  const handleStatusUpdate = (distribution: FuelDistributionType) => {
+    // For now, just log it since you don't have the status update modal yet
+    console.log('Status update requested for:', distribution);
+    // You can implement the status update modal later
   };
 
   return (
@@ -71,90 +80,14 @@ const FuelDistributions: React.FC = () => {
         </Card>
       </div>
 
-      {/* Recent Distributions */}
-      <Card
-        title="Recent Distributions"
-        subtitle="Latest fuel distribution orders"
-      >
-        {isLoading ? (
-          <div className="flex justify-center items-center py-8">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-          </div>
-        ) : error ? (
-          <div className="bg-red-50 border border-red-200 text-red-700 p-4 rounded-md">
-            {error}
-          </div>
-        ) : distributions.length === 0 ? (
-          <div className="text-center py-8 text-gray-500">
-            No distributions found. Create your first distribution to get started.
-          </div>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Reference
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Station
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Fuel Type
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Amount (L)
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Status
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Date
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {distributions.map((distribution) => (
-                  <tr key={distribution.id}>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-blue-600">
-                      {distribution.distributionReference}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm font-medium text-gray-900">
-                        {distribution.fuelStation.name}
-                      </div>
-                      <div className="text-sm text-gray-500">
-                        {distribution.fuelStation.city}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
-                        {distribution.fuelType}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                      {distribution.fuelAmount.toLocaleString()}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                        distribution.status === 'PENDING' ? 'bg-yellow-100 text-yellow-800' :
-                        distribution.status === 'DELIVERED' ? 'bg-green-100 text-green-800' :
-                        distribution.status === 'IN_TRANSIT' ? 'bg-blue-100 text-blue-800' :
-                        'bg-red-100 text-red-800'
-                      }`}>
-                        {distribution.status}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {new Date(distribution.distributionDate).toLocaleDateString()}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </Card>
+      {/* Distribution List Component */}
+      <DistributionList 
+        distributions={distributions}
+        isLoading={isLoading}
+        error={error}
+        onStatusUpdate={handleStatusUpdate}
+        onRefresh={fetchDistributions}
+      />
     </div>
   );
 };
