@@ -1,6 +1,6 @@
-import { StyleSheet } from 'react-native';
-import { colors } from './colors';
-import { fonts, fontSizes } from './fonts';
+import { StyleSheet } from "react-native";
+import { colors } from "./colors";
+import { fonts, fontSizes } from "./fonts";
 
 export const globalStyles = StyleSheet.create({
     // Container styles
@@ -14,8 +14,8 @@ export const globalStyles = StyleSheet.create({
     },
     centerContainer: {
         flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
+        justifyContent: "center",
+        alignItems: "center",
         backgroundColor: colors.background,
     },
 
@@ -74,8 +74,8 @@ export const globalStyles = StyleSheet.create({
         borderRadius: 12,
         paddingVertical: 15,
         paddingHorizontal: 20,
-        alignItems: 'center',
-        justifyContent: 'center',
+        alignItems: "center",
+        justifyContent: "center",
         minHeight: 50,
     },
     buttonPrimary: {
@@ -85,14 +85,14 @@ export const globalStyles = StyleSheet.create({
         backgroundColor: colors.secondary,
     },
     buttonOutline: {
-        backgroundColor: 'transparent',
+        backgroundColor: "transparent",
         borderWidth: 2,
         borderColor: colors.primary,
     },
     buttonText: {
         fontSize: fontSizes.md,
         fontFamily: fonts.medium,
-        textAlign: 'center',
+        textAlign: "center",
     },
     buttonTextPrimary: {
         color: colors.white,
@@ -127,20 +127,20 @@ export const globalStyles = StyleSheet.create({
 
     // Layout styles
     row: {
-        flexDirection: 'row',
-        alignItems: 'center',
+        flexDirection: "row",
+        alignItems: "center",
     },
     rowBetween: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
+        flexDirection: "row",
+        justifyContent: "space-between",
+        alignItems: "center",
     },
     column: {
-        flexDirection: 'column',
+        flexDirection: "column",
     },
     centered: {
-        alignItems: 'center',
-        justifyContent: 'center',
+        alignItems: "center",
+        justifyContent: "center",
     },
 
     // Spacing styles

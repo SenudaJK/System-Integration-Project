@@ -1,17 +1,17 @@
 export const fonts = {
     // Font families
-    regular: 'Roboto-Regular',
-    medium: 'Roboto-Medium',
-    bold: 'Roboto-Bold',
-    light: 'Roboto-Light',
+    regular: "Roboto-Regular",
+    medium: "Roboto-Medium",
+    bold: "Roboto-Bold",
+    light: "Roboto-Light",
 
     // Font weights
     weights: {
-        light: '300',
-        regular: '400',
-        medium: '500',
-        bold: '700',
-        extraBold: '800',
+        light: "300",
+        regular: "400",
+        medium: "500",
+        bold: "700",
+        extraBold: "800",
     },
 };
 

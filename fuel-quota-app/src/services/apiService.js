@@ -1,6 +1,6 @@
-import axios from 'axios';
+import axios from "axios";
 
-const BASE_URL = 'http://192.168.1.100:8080/api';
+const BASE_URL = "http://192.168.1.100:8080/api";
 
 class ApiService {
     constructor() {
@@ -8,14 +8,18 @@ class ApiService {
             baseURL: BASE_URL,
             timeout: 10000,
             headers: {
-                'Content-Type': 'application/json',
+                "Content-Type": "application/json",
             },
         });
 
         // Request interceptor
         this.api.interceptors.request.use(
             (config) => {
-                console.log(`Making ${config.method?.toUpperCase()} request to: ${config.url}`);
+                console.log(
+                    `Making ${config.method?.toUpperCase()} request to: ${
+                        config.url
+                    }`
+                );
                 return config;
             },
             (error) => {
@@ -29,7 +33,10 @@ class ApiService {
                 return response;
             },
             (error) => {
-                console.error('API Error:', error.response?.data || error.message);
+                console.error(
+                    "API Error:",
+                    error.response?.data || error.message
+                );
                 return Promise.reject(error);
             }
         );
@@ -37,19 +44,21 @@ class ApiService {
 
     setAuthToken(token) {
         if (token) {
-            this.api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+            this.api.defaults.headers.common[
+                "Authorization"
+            ] = `Bearer ${token}`;
         } else {
-            delete this.api.defaults.headers.common['Authorization'];
+            delete this.api.defaults.headers.common["Authorization"];
         }
     }
 
     // Auth endpoints
     async login(credentials) {
-        return this.api.post('/auth/login', credentials);
+        return this.api.post("/auth/login", credentials);
     }
 
     async register(userData) {
-        return this.api.post('/auth/register', userData);
+        return this.api.post("/auth/register", userData);
     }
 
     // Vehicle/QR endpoints
@@ -63,11 +72,13 @@ class ApiService {
 
     // Fuel transaction endpoints
     async recordFuelTransaction(transactionData) {
-        return this.api.post('/fuel-transactions', transactionData);
+        return this.api.post("/fuel-transactions", transactionData);
     }
 
     async getTransactionHistory(operatorId, page = 0, size = 20) {
-        return this.api.get(`/fuel-transactions/operator/${operatorId}?page=${page}&size=${size}`);
+        return this.api.get(
+            `/fuel-transactions/operator/${operatorId}?page=${page}&size=${size}`
+        );
     }
 
     // Fuel station endpoints
