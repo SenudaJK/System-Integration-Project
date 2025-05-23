@@ -47,6 +47,13 @@ public class FuelStationController {
         return ResponseEntity.ok(updatedFuelStation);
     }
 
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteFuelStation(@PathVariable Long id) {
+        fuelStationService.deleteFuelStation(id);
+        return ResponseEntity.noContent().build();
+    }
+
+
 
 
 
