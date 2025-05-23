@@ -3,6 +3,7 @@ export type User = {
   email: string;
   name: string;
   role: 'ROLE_ADMIN' | 'ROLE_USER' | 'ROLE_STATION_MANAGER';
+  username?: string;
 };
 
 export type FuelStation = {

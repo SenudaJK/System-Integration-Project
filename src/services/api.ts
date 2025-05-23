@@ -108,6 +108,30 @@ export const adminApi = {
     fetchWithAuth('/admin/fuel-stations', {
       method: 'POST',
       body: JSON.stringify(stationData)
+    }),
+    
+  // Vehicle Type Management
+  getVehicleTypes: () => 
+    fetchWithAuth('/vehicle-types'),
+    
+  getVehicleType: (id: number) => 
+    fetchWithAuth(`/vehicle-types/${id}`),
+    
+  createVehicleType: (vehicleTypeData: Omit<VehicleType, 'id'>) => 
+    fetchWithAuth('/vehicle-types', {
+      method: 'POST',
+      body: JSON.stringify(vehicleTypeData)
+    }),
+    
+  updateVehicleType: (id: number, vehicleTypeData: Omit<VehicleType, 'id'>) => 
+    fetchWithAuth(`/vehicle-types/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(vehicleTypeData)
+    }),
+    
+  deleteVehicleType: (id: number) => 
+    fetchWithAuth(`/vehicle-types/${id}`, {
+      method: 'DELETE'
     })
 };
 
@@ -126,6 +150,15 @@ type FuelStation = {
   status: string;
   createdAt: string;
   [key: string]: any; // Add other properties as needed
+};
+
+// Define the VehicleType type
+type VehicleType = {
+  id?: number;
+  name: string;
+  description: string;
+  weeklyQuota: number;
+  fuelType: 'PETROL' | 'DIESEL' | 'KEROSENE' | 'ELECTRIC';
 };
 
 // User API

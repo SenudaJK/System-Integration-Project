@@ -37,31 +37,10 @@ const Login: React.FC = () => {
     setIsSubmitting(true);
       
     try {
-      // Use relative URL that will be handled by the proxy
-      const response = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ username, password }),
-        credentials: 'include'
-      });
-        
-      if (!response.ok) {
-        // Error handling code as before...
-        throw new Error(errorMessage || 'An unknown error occurred.');
-      }
-        
-      const data = await response.json();
-      console.log('Login response:', data);
-        
-      // Store tokens in localStorage
-      localStorage.setItem('token', data.token);
-      localStorage.setItem('token_type', data.type);
-      localStorage.setItem('user_role', data.roles[0]); // Save the user's role
-        
+      await login(username, password);
+      
       // Determine where to navigate based on user role
-      const userRole = data.roles[0];
+      const userRole = localStorage.getItem('user_role');
       if (userRole === 'ROLE_ADMIN') {
         navigate('/admin/dashboard');
       } else if (userRole === 'ROLE_STATION_MANAGER') {

@@ -2,8 +2,8 @@ import React from 'react';
 import { Navigate, Outlet } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 
-const AdminRouteGuard: React.FC = () => {
-  const { isAuthenticated, isAdmin, isLoading } = useAuth();
+const UserRouteGuard: React.FC = () => {
+  const { isAuthenticated, user, isLoading } = useAuth();
   
   if (isLoading) {
     return (
@@ -17,12 +17,11 @@ const AdminRouteGuard: React.FC = () => {
     return <Navigate to="/login" replace />;
   }
   
-  if (!isAdmin()) {
+  if (user?.role !== 'ROLE_USER') {
     return <Navigate to="/unauthorized" replace />;
   }
   
   return <Outlet />;
 };
 
-export default AdminRouteGuard;
-
+export default UserRouteGuard;

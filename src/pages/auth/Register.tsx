@@ -13,7 +13,7 @@ const Register: React.FC = () => {
     email: '',
     password: '',
     confirmPassword: '',
-    role: 'ROLE_USER' // Default role
+    role: 'ROLE_ADMIN' // Default role
   });
   
   const [errors, setErrors] = useState<Record<string, string>>({});

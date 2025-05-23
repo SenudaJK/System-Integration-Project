@@ -8,8 +8,12 @@ import UserDashboard from './pages/user/Dashboard';
 import StationDashboard from './pages/station/Dashboard';
 import AdminRouteGuard from './components/guards/AdminRouteGuard';
 import AuthRouteGuard from './components/guards/AuthRouteGuard';
+import UserRouteGuard from './components/guards/UserRouteGuard';
+import StationManagerRouteGuard from './components/guards/StationManagerRouteGuard';
 import Layout from './components/layout/Layout';
 import Unauthorized from './pages/Unauthorized';
+import VehicleTypesList from './pages/admin/VehicleTypesList';
+import EditVehicleType from './pages/admin/EditVehicleType';
 
 function App() {
   return (
@@ -25,16 +29,25 @@ function App() {
           <Route element={<AuthRouteGuard />}>
             <Route element={<Layout />}>
               {/* Admin routes */}
-              <Route path="/admin/" element={<AdminRouteGuard />}>
+              <Route path="admin" element={<AdminRouteGuard />}>
                 <Route path="dashboard" element={<Dashboard />} />
+                <Route path="vehicle-types" element={<VehicleTypesList />} />
+                <Route path="vehicle-types/new" element={<EditVehicleType />} />
+                <Route path="vehicle-types/edit/:id" element={<EditVehicleType />} />
                 {/* Other admin routes */}
               </Route>
               
               {/* User routes */}
-              <Route path="/user/dashboard" element={<UserDashboard />} />
+              <Route path="user" element={<UserRouteGuard />}>
+                <Route path="dashboard" element={<UserDashboard />} />
+                {/* Other user routes */}
+              </Route>
               
               {/* Station manager routes */}
-              <Route path="/station/dashboard" element={<StationDashboard />} />
+              <Route path="station" element={<StationManagerRouteGuard />}>
+                <Route path="dashboard" element={<StationDashboard />} />
+                {/* Other station manager routes */}
+              </Route>
             </Route>
           </Route>
           

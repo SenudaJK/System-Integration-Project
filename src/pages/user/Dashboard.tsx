@@ -21,7 +21,12 @@ const UserDashboard: React.FC = () => {
       try {
         setIsLoading(true);
         const vehiclesData = await userApi.getVehicles();
-        setVehicles(vehiclesData);
+        if (Array.isArray(vehiclesData)) {
+          setVehicles(vehiclesData as Vehicle[]);
+        } else {
+          setVehicles([]);
+          setError('Failed to load vehicles data');
+        }
         
         // For demo purposes, we're using admin transactions
         // In a real app, you'd have a specific endpoint for user transactions
@@ -58,15 +63,15 @@ const UserDashboard: React.FC = () => {
   const vehiclesColumns = [
     { 
       header: 'Registration No.',
-      accessor: 'registrationNumber'
+      accessor: 'registrationNumber' as keyof Vehicle
     },
     { 
       header: 'Vehicle Type',
-      accessor: 'vehicleType'
+      accessor: 'vehicleType' as keyof Vehicle
     },
     { 
       header: 'Fuel Type',
-      accessor: 'fuelType'
+      accessor: 'fuelType' as keyof Vehicle
     },
     { 
       header: 'Remaining Quota',
@@ -92,11 +97,11 @@ const UserDashboard: React.FC = () => {
   const transactionsColumns = [
     { 
       header: 'Station',
-      accessor: 'stationName'
+      accessor: 'stationName' as keyof Transaction
     },
     { 
       header: 'Vehicle',
-      accessor: 'vehicleRegistration'
+      accessor: 'vehicleRegistration' as keyof Transaction
     },
     { 
       header: 'Amount (L)',
