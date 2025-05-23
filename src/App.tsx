@@ -25,7 +25,7 @@ function App() {
           <Route element={<AuthRouteGuard />}>
             <Route element={<Layout />}>
               {/* Admin routes */}
-              <Route path="/admin" element={<AdminRouteGuard />}>
+              <Route path="/admin/" element={<AdminRouteGuard />}>
                 <Route path="dashboard" element={<Dashboard />} />
                 {/* Other admin routes */}
               </Route>

@@ -60,7 +60,7 @@ const Sidebar: React.FC<SidebarProps> = ({
   
   const userLinks = [
     { to: '/dashboard', label: 'Dashboard', icon: <Home size={20} /> },
-    { to: '/vehicles', label: 'My Vehicles', icon: <Truck size={20} /> },
+    { to: '/vehicles', label: 'Fuel Distributions', icon: <Truck size={20} /> },
     { to: '/quota', label: 'Fuel Quota', icon: <Droplet size={20} /> },
   ];
   
@@ -70,9 +70,9 @@ const Sidebar: React.FC<SidebarProps> = ({
     { to: '/station/reports', label: 'Reports', icon: <BarChart2 size={20} /> },
   ];
   
-  const links = user?.role === 'ADMIN' 
+  const links = user?.role === 'ROLE_ADMIN' 
     ? adminLinks 
-    : user?.role === 'STATION_MANAGER' 
+    : user?.role === 'ROLE_STATION_MANAGER' 
       ? stationLinks 
       : userLinks;
 
