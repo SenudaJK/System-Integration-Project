@@ -26,7 +26,7 @@ public class Vehicle {
     private VehicleType vehicleType;
 
     @Enumerated(EnumType.STRING)
-   @Column(nullable = false)
+    @Column(nullable = false)
     private FuelType fuelType;
 
     @Column(nullable = false)
@@ -36,22 +36,14 @@ public class Vehicle {
     @JoinColumn(name = "owner_id", nullable = false)
     private Owner owner;
 
+    @Column(columnDefinition = "TEXT") // Add the qr_code column
+    private String qrCode;
+
     public enum VehicleType {
-        MOTORCYCLE, 
-        THREE_WHEELER, 
-        Car, 
-        VAN, 
-        BUS, 
-        LORRY, 
-        TRUCK, 
-        HEAVY_VEHICLE
+        MOTORCYCLE, THREE_WHEELER, CAR, VAN, BUS, LORRY, TRUCK, HEAVY_VEHICLE
     }
 
     public enum FuelType {
-        PETROL_92, 
-        PETROL_95, 
-        DIESEL, 
-        SUPER_DIESEL, 
-        KEROSENE
+        PETROL_92, PETROL_95, DIESEL, SUPER_DIESEL, KEROSENE
     }
 }

@@ -1,7 +1,6 @@
 package com.fuelquota.management.dto;
 
-import com.fuelquota.management.model.Vehicle.FuelType;
-import com.fuelquota.management.model.Vehicle.VehicleType;
+import com.fuelquota.management.model.Vehicle;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
@@ -16,11 +15,13 @@ public class VehicleRegistrationDto {
     private String chassisNumber;
 
     @NotNull(message = "Vehicle type is required")
-    private VehicleType vehicleType;
+    private Vehicle.VehicleType vehicleType;
 
     @NotNull(message = "Fuel type is required")
-    private FuelType fuelType;
+    private Vehicle.FuelType fuelType;
 
     @NotBlank(message = "Owner NIC is required")
     private String ownerNic;
+
+    private String qrCode; // Add the qrCode field
 }

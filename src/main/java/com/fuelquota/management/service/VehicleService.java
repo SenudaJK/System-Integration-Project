@@ -5,6 +5,8 @@ import com.fuelquota.management.dto.VehicleValidationResponse;
 import com.fuelquota.management.model.Owner;
 import com.fuelquota.management.model.Vehicle;
 import com.fuelquota.management.repository.VehicleRepository;
+import com.fuelquota.management.util.QRCodeGenerator;
+
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.http.HttpStatus;
@@ -40,20 +42,25 @@ public class VehicleService {
 
         // Get owner
         Owner owner = ownerService.findByNic(vehicleDto.getOwnerNic())
-                .orElseThrow(
-                        () -> new IllegalArgumentException("Owner not found with NIC: " + vehicleDto.getOwnerNic()));
+                .orElseThrow(() -> new IllegalArgumentException("Owner not found with NIC: " + vehicleDto.getOwnerNic()));
 
-        System.out.println("VehicleRegistrationDto: " + vehicleDto);
-
+        // Create and save vehicle
         Vehicle vehicle = new Vehicle();
         vehicle.setVehicleNumber(vehicleDto.getVehicleNumber());
         vehicle.setChassisNumber(vehicleDto.getChassisNumber());
         vehicle.setVehicleType(vehicleDto.getVehicleType());
         vehicle.setFuelType(vehicleDto.getFuelType());
         vehicle.setOwner(owner);
-        vehicle.setVerified(true);
 
-        System.out.print(vehicle);
+        // Generate QR code
+        String qrCodeData = String.format("Vehicle Number: %s\nVehicle Type: %s\nOwner NIC: %s",
+                vehicle.getVehicleNumber(), vehicle.getVehicleType(), owner.getNic());
+        try {
+            String qrCodeBase64 = QRCodeGenerator.generateQRCode(qrCodeData, 200, 200);
+            vehicle.setQrCode(qrCodeBase64); // Save QR code in the database
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to generate QR code", e);
+        }
 
         return vehicleRepository.save(vehicle);
     }

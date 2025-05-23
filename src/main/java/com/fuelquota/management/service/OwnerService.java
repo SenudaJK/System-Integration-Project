@@ -45,7 +45,7 @@ public class OwnerService {
         return ownerRepository.save(owner);
     }
 
-    @Transactional 
+    @Transactional /* */
     public void sendVerificationOtp(String email) {
         // Validate email format (optional)
         if (!email.matches("^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,6}$")) {
@@ -54,6 +54,17 @@ public class OwnerService {
 
         // Generate and sent and save OTP
         otpService.generateAndSendOtp(email, OtpRecord.OtpPurpose.EMAIL_VERIFICATION);
+    }
+
+    @Transactional 
+    public void sendLoginOtp(String email) {
+        // Validate email format (optional)
+        if (!email.matches("^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,6}$")) {
+            throw new IllegalArgumentException("Invalid email address");
+        }
+
+        // Generate and sent and save OTP
+        otpService.generateAndSendOtp(email, OtpRecord.OtpPurpose.LOGIN_VERIFICATION);
     }
 
     @Transactional
@@ -69,18 +80,22 @@ public class OwnerService {
             // Check if an Owner already exists with this email
             Optional<Owner> existingOwner = ownerRepository.findByEmail(email);
 
-            // if (existingOwner.isPresent()) {
-            // // Update the existing Owner's email verification status
-            // Owner owner = existingOwner.get();
-            // owner.setEmailVerified(true);
-            // ownerRepository.save(owner);
-            // } else {
-            // // Create a new Owner record with the verified email
-            // Owner newOwner = new Owner();
-            // newOwner.setEmail(email);
-            // newOwner.setEmailVerified(true);
-            // ownerRepository.save(newOwner);
-            // }
+            
+        }
+
+        return verified;
+    }
+
+    @Transactional
+    public boolean verifyEmailForLogin(String email, String otp) {
+        // Verify the OTP using the OtpRecord table
+        boolean verified = otpService.verifyOtp(email, otp, OtpRecord.OtpPurpose.LOGIN_VERIFICATION);
+
+        if (verified) {
+            // Fetch the OtpRecord to confirm the email exists in the OtpRecord table
+            OtpRecord otpRecord = otpRepository.findByEmailAndPurpose(email, OtpRecord.OtpPurpose.LOGIN_VERIFICATION)
+                    .orElseThrow(() -> new IllegalArgumentException("No OTP record found for the provided email"));
+   
         }
 
         return verified;

@@ -23,6 +23,7 @@ public class OtpRecord {
     
     public enum OtpPurpose {
         EMAIL_VERIFICATION,
+        LOGIN_VERIFICATION,
         QR_CODE_GENERATION
     }
     

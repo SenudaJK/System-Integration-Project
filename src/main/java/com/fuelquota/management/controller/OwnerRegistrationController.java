@@ -93,10 +93,57 @@ public class OwnerRegistrationController {
         }
     }
 
+    @CrossOrigin(origins = "http://localhost:5173")
+    @PostMapping("/send-otpForLogin") /* */
+    public ResponseEntity<?> sendOtpToEmailForLogin(@RequestParam String email) {
+        try {
+            
+            // Send OTP to the provided email
+            ownerService.sendLoginOtp(email);
+
+            Map<String, String> response = new HashMap<>();
+            response.put("message", "OTP sent to the provided email address.");
+            return ResponseEntity.ok(response);
+        } catch (IllegalArgumentException e) {
+            Map<String, String> errorResponse = new HashMap<>();
+            errorResponse.put("error", e.getMessage());
+            return ResponseEntity.badRequest().body(errorResponse);
+        } catch (Exception e) {
+            Map<String, String> errorResponse = new HashMap<>();
+            errorResponse.put("error", "An unexpected error occurred.");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
+        }
+    }
+
     @PostMapping("/validate-otp") // * */
     public ResponseEntity<?> validateOtp(@RequestParam String email, @RequestParam String otp) {
         try {
             boolean verified = ownerService.verifyEmail(email, otp);
+
+            if (verified) {
+                Map<String, String> response = new HashMap<>();
+                response.put("message", "Email verified successfully.");
+                return ResponseEntity.ok(response);
+            } else {
+                Map<String, String> errorResponse = new HashMap<>();
+                errorResponse.put("error", "Invalid or expired OTP.");
+                return ResponseEntity.badRequest().body(errorResponse);
+            }
+        } catch (IllegalArgumentException e) {
+            Map<String, String> errorResponse = new HashMap<>();
+            errorResponse.put("error", e.getMessage());
+            return ResponseEntity.badRequest().body(errorResponse);
+        } catch (Exception e) {
+            Map<String, String> errorResponse = new HashMap<>();
+            errorResponse.put("error", "An unexpected error occurred.");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
+        }
+    }
+
+    @PostMapping("/validate-otpLogin") // * */
+    public ResponseEntity<?> validateOtpLogin(@RequestParam String email, @RequestParam String otp) {
+        try {
+            boolean verified = ownerService.verifyEmailForLogin(email, otp);
 
             if (verified) {
                 Map<String, String> response = new HashMap<>();
