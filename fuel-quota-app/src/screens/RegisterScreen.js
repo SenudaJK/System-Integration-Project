@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import {
     View,
     Text,
@@ -9,23 +9,23 @@ import {
     KeyboardAvoidingView,
     Platform,
     Alert,
-} from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
-import { Ionicons } from '@expo/vector-icons';
-import { useAuth } from '../contexts/AuthContext';
-import { useLoading } from '../contexts/LoadingContext';
+} from "react-native";
+import { LinearGradient } from "expo-linear-gradient";
+import { Ionicons } from "@expo/vector-icons";
+import { useAuth } from "../contexts/AuthContext";
+import { useLoading } from "../contexts/LoadingContext";
 
 export default function RegisterScreen({ navigation }) {
     const [formData, setFormData] = useState({
-        firstName: '',
-        lastName: '',
-        email: '',
-        phone: '',
-        password: '',
-        confirmPassword: '',
-        stationName: '',
-        stationAddress: '',
-        licenseNumber: '',
+        firstName: "",
+        lastName: "",
+        email: "",
+        phone: "",
+        password: "",
+        confirmPassword: "",
+        stationName: "",
+        stationAddress: "",
+        licenseNumber: "",
     });
     const [errors, setErrors] = useState({});
     const [showPassword, setShowPassword] = useState(false);
@@ -37,25 +37,31 @@ export default function RegisterScreen({ navigation }) {
     const validateForm = () => {
         const newErrors = {};
 
-        if (!formData.firstName.trim()) newErrors.firstName = 'First name is required';
-        if (!formData.lastName.trim()) newErrors.lastName = 'Last name is required';
+        if (!formData.firstName.trim())
+            newErrors.firstName = "First name is required";
+        if (!formData.lastName.trim())
+            newErrors.lastName = "Last name is required";
         if (!formData.email.trim()) {
-            newErrors.email = 'Email is required';
+            newErrors.email = "Email is required";
         } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-            newErrors.email = 'Email is invalid';
+            newErrors.email = "Email is invalid";
         }
-        if (!formData.phone.trim()) newErrors.phone = 'Phone number is required';
+        if (!formData.phone.trim())
+            newErrors.phone = "Phone number is required";
         if (!formData.password.trim()) {
-            newErrors.password = 'Password is required';
+            newErrors.password = "Password is required";
         } else if (formData.password.length < 6) {
-            newErrors.password = 'Password must be at least 6 characters';
+            newErrors.password = "Password must be at least 6 characters";
         }
         if (formData.password !== formData.confirmPassword) {
-            newErrors.confirmPassword = 'Passwords do not match';
+            newErrors.confirmPassword = "Passwords do not match";
         }
-        if (!formData.stationName.trim()) newErrors.stationName = 'Station name is required';
-        if (!formData.stationAddress.trim()) newErrors.stationAddress = 'Station address is required';
-        if (!formData.licenseNumber.trim()) newErrors.licenseNumber = 'License number is required';
+        if (!formData.stationName.trim())
+            newErrors.stationName = "Station name is required";
+        if (!formData.stationAddress.trim())
+            newErrors.stationAddress = "Station address is required";
+        if (!formData.licenseNumber.trim())
+            newErrors.licenseNumber = "License number is required";
 
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
@@ -64,63 +70,91 @@ export default function RegisterScreen({ navigation }) {
     const handleRegister = async () => {
         if (!validateForm()) return;
 
-        showLoading('Creating account...');
+        showLoading("Creating account...");
 
         // Mock registration - replace with actual API call
         setTimeout(() => {
             hideLoading();
             Alert.alert(
-                'Registration Successful',
-                'Your account has been created successfully. Please login.',
-                [{ text: 'OK', onPress: () => navigation.navigate('Login') }]
+                "Registration Successful",
+                "Your account has been created successfully. Please login.",
+                [{ text: "OK", onPress: () => navigation.navigate("Login") }]
             );
         }, 2000);
     };
 
     const updateFormData = (field, value) => {
-        setFormData(prev => ({ ...prev, [field]: value }));
+        setFormData((prev) => ({ ...prev, [field]: value }));
         if (errors[field]) {
-            setErrors(prev => ({ ...prev, [field]: '' }));
+            setErrors((prev) => ({ ...prev, [field]: "" }));
         }
     };
 
-
     return (
         <KeyboardAvoidingView
-            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+            behavior={Platform.OS === "ios" ? "padding" : "height"}
             style={styles.container}
         >
             <LinearGradient
-                colors={['#1B5E20', '#2E7D32']}
+                colors={["#1B5E20", "#2E7D32"]}
                 style={styles.gradient}
             >
                 <ScrollView contentContainerStyle={styles.scrollContent}>
                     <View style={styles.formContainer}>
                         <Text style={styles.title}>Create Account</Text>
-                        <Text style={styles.subtitle}>Register as a fuel station operator</Text>
+                        <Text style={styles.subtitle}>
+                            Register as a fuel station operator
+                        </Text>
 
                         {/* Personal Information */}
-                        <Text style={styles.sectionTitle}>Personal Information</Text>
+                        <Text style={styles.sectionTitle}>
+                            Personal Information
+                        </Text>
 
                         <View style={styles.inputRow}>
-                            <View style={[styles.inputContainer, { flex: 1, marginRight: 10 }]}>
-                                <Ionicons name="person-outline" size={20} color="#666" style={styles.inputIcon} />
+                            <View
+                                style={[
+                                    styles.inputContainer,
+                                    { flex: 1, marginRight: 10 },
+                                ]}
+                            >
+                                <Ionicons
+                                    name="person-outline"
+                                    size={20}
+                                    color="#666"
+                                    style={styles.inputIcon}
+                                />
                                 <TextInput
-                                    style={[styles.input, errors.firstName && styles.inputError]}
+                                    style={[
+                                        styles.input,
+                                        errors.firstName && styles.inputError,
+                                    ]}
                                     placeholder="First Name"
                                     value={formData.firstName}
-                                    onChangeText={(value) => updateFormData('firstName', value)}
+                                    onChangeText={(value) =>
+                                        updateFormData("firstName", value)
+                                    }
                                 />
                             </View>
                         </View>
                         <View style={styles.inputRow}>
                             <View style={[styles.inputContainer, { flex: 1 }]}>
-                                <Ionicons name="person-outline" size={20} color="#666" style={styles.inputIcon} />
+                                <Ionicons
+                                    name="person-outline"
+                                    size={20}
+                                    color="#666"
+                                    style={styles.inputIcon}
+                                />
                                 <TextInput
-                                    style={[styles.input, errors.lastName && styles.inputError]}
+                                    style={[
+                                        styles.input,
+                                        errors.lastName && styles.inputError,
+                                    ]}
                                     placeholder="Last Name"
                                     value={formData.lastName}
-                                    onChangeText={(value) => updateFormData('lastName', value)}
+                                    onChangeText={(value) =>
+                                        updateFormData("lastName", value)
+                                    }
                                 />
                             </View>
                         </View>
@@ -131,40 +165,74 @@ export default function RegisterScreen({ navigation }) {
                         )}
 
                         <View style={styles.inputContainer}>
-                            <Ionicons name="mail-outline" size={20} color="#666" style={styles.inputIcon} />
+                            <Ionicons
+                                name="mail-outline"
+                                size={20}
+                                color="#666"
+                                style={styles.inputIcon}
+                            />
                             <TextInput
-                                style={[styles.input, errors.email && styles.inputError]}
+                                style={[
+                                    styles.input,
+                                    errors.email && styles.inputError,
+                                ]}
                                 placeholder="Email Address"
                                 value={formData.email}
-                                onChangeText={(value) => updateFormData('email', value)}
+                                onChangeText={(value) =>
+                                    updateFormData("email", value)
+                                }
                                 keyboardType="email-address"
                                 autoCapitalize="none"
                             />
                         </View>
-                        {errors.email && <Text style={styles.errorText}>{errors.email}</Text>}
+                        {errors.email && (
+                            <Text style={styles.errorText}>{errors.email}</Text>
+                        )}
 
                         <View style={styles.inputContainer}>
-                            <Ionicons name="call-outline" size={20} color="#666" style={styles.inputIcon} />
+                            <Ionicons
+                                name="call-outline"
+                                size={20}
+                                color="#666"
+                                style={styles.inputIcon}
+                            />
                             <TextInput
-                                style={[styles.input, errors.phone && styles.inputError]}
+                                style={[
+                                    styles.input,
+                                    errors.phone && styles.inputError,
+                                ]}
                                 placeholder="Phone Number"
                                 value={formData.phone}
-                                onChangeText={(value) => updateFormData('phone', value)}
+                                onChangeText={(value) =>
+                                    updateFormData("phone", value)
+                                }
                                 keyboardType="phone-pad"
                             />
                         </View>
-                        {errors.phone && <Text style={styles.errorText}>{errors.phone}</Text>}
+                        {errors.phone && (
+                            <Text style={styles.errorText}>{errors.phone}</Text>
+                        )}
 
                         {/* Password Section */}
                         <Text style={styles.sectionTitle}>Security</Text>
 
                         <View style={styles.inputContainer}>
-                            <Ionicons name="lock-closed-outline" size={20} color="#666" style={styles.inputIcon} />
+                            <Ionicons
+                                name="lock-closed-outline"
+                                size={20}
+                                color="#666"
+                                style={styles.inputIcon}
+                            />
                             <TextInput
-                                style={[styles.input, errors.password && styles.inputError]}
+                                style={[
+                                    styles.input,
+                                    errors.password && styles.inputError,
+                                ]}
                                 placeholder="Password"
                                 value={formData.password}
-                                onChangeText={(value) => updateFormData('password', value)}
+                                onChangeText={(value) =>
+                                    updateFormData("password", value)
+                                }
                                 secureTextEntry={!showPassword}
                                 autoCapitalize="none"
                             />
@@ -173,91 +241,171 @@ export default function RegisterScreen({ navigation }) {
                                 style={styles.eyeIcon}
                             >
                                 <Ionicons
-                                    name={showPassword ? "eye-outline" : "eye-off-outline"}
+                                    name={
+                                        showPassword
+                                            ? "eye-outline"
+                                            : "eye-off-outline"
+                                    }
                                     size={20}
                                     color="#666"
                                 />
                             </TouchableOpacity>
                         </View>
-                        {errors.password && <Text style={styles.errorText}>{errors.password}</Text>}
+                        {errors.password && (
+                            <Text style={styles.errorText}>
+                                {errors.password}
+                            </Text>
+                        )}
 
                         <View style={styles.inputContainer}>
-                            <Ionicons name="lock-closed-outline" size={20} color="#666" style={styles.inputIcon} />
+                            <Ionicons
+                                name="lock-closed-outline"
+                                size={20}
+                                color="#666"
+                                style={styles.inputIcon}
+                            />
                             <TextInput
-                                style={[styles.input, errors.confirmPassword && styles.inputError]}
+                                style={[
+                                    styles.input,
+                                    errors.confirmPassword && styles.inputError,
+                                ]}
                                 placeholder="Confirm Password"
                                 value={formData.confirmPassword}
-                                onChangeText={(value) => updateFormData('confirmPassword', value)}
+                                onChangeText={(value) =>
+                                    updateFormData("confirmPassword", value)
+                                }
                                 secureTextEntry={!showConfirmPassword}
                                 autoCapitalize="none"
                             />
                             <TouchableOpacity
-                                onPress={() => setShowConfirmPassword(!showConfirmPassword)}
+                                onPress={() =>
+                                    setShowConfirmPassword(!showConfirmPassword)
+                                }
                                 style={styles.eyeIcon}
                             >
                                 <Ionicons
-                                    name={showConfirmPassword ? "eye-outline" : "eye-off-outline"}
+                                    name={
+                                        showConfirmPassword
+                                            ? "eye-outline"
+                                            : "eye-off-outline"
+                                    }
                                     size={20}
                                     color="#666"
                                 />
                             </TouchableOpacity>
                         </View>
-                        {errors.confirmPassword && <Text style={styles.errorText}>{errors.confirmPassword}</Text>}
+                        {errors.confirmPassword && (
+                            <Text style={styles.errorText}>
+                                {errors.confirmPassword}
+                            </Text>
+                        )}
 
                         {/* Station Information */}
-                        <Text style={styles.sectionTitle}>Station Information</Text>
+                        <Text style={styles.sectionTitle}>
+                            Station Information
+                        </Text>
 
                         <View style={styles.inputContainer}>
-                            <Ionicons name="business-outline" size={20} color="#666" style={styles.inputIcon} />
+                            <Ionicons
+                                name="business-outline"
+                                size={20}
+                                color="#666"
+                                style={styles.inputIcon}
+                            />
                             <TextInput
-                                style={[styles.input, errors.stationName && styles.inputError]}
+                                style={[
+                                    styles.input,
+                                    errors.stationName && styles.inputError,
+                                ]}
                                 placeholder="Fuel Station Name"
                                 value={formData.stationName}
-                                onChangeText={(value) => updateFormData('stationName', value)}
+                                onChangeText={(value) =>
+                                    updateFormData("stationName", value)
+                                }
                             />
                         </View>
-                        {errors.stationName && <Text style={styles.errorText}>{errors.stationName}</Text>}
+                        {errors.stationName && (
+                            <Text style={styles.errorText}>
+                                {errors.stationName}
+                            </Text>
+                        )}
 
                         <View style={styles.inputContainer}>
-                            <Ionicons name="location-outline" size={20} color="#666" style={styles.inputIcon} />
+                            <Ionicons
+                                name="location-outline"
+                                size={20}
+                                color="#666"
+                                style={styles.inputIcon}
+                            />
                             <TextInput
-                                style={[styles.input, errors.stationAddress && styles.inputError]}
+                                style={[
+                                    styles.input,
+                                    errors.stationAddress && styles.inputError,
+                                ]}
                                 placeholder="Station Address"
                                 value={formData.stationAddress}
-                                onChangeText={(value) => updateFormData('stationAddress', value)}
+                                onChangeText={(value) =>
+                                    updateFormData("stationAddress", value)
+                                }
                                 multiline
                             />
                         </View>
-                        {errors.stationAddress && <Text style={styles.errorText}>{errors.stationAddress}</Text>}
+                        {errors.stationAddress && (
+                            <Text style={styles.errorText}>
+                                {errors.stationAddress}
+                            </Text>
+                        )}
 
                         <View style={styles.inputContainer}>
-                            <Ionicons name="document-outline" size={20} color="#666" style={styles.inputIcon} />
+                            <Ionicons
+                                name="document-outline"
+                                size={20}
+                                color="#666"
+                                style={styles.inputIcon}
+                            />
                             <TextInput
-                                style={[styles.input, errors.licenseNumber && styles.inputError]}
+                                style={[
+                                    styles.input,
+                                    errors.licenseNumber && styles.inputError,
+                                ]}
                                 placeholder="License Number"
                                 value={formData.licenseNumber}
-                                onChangeText={(value) => updateFormData('licenseNumber', value)}
+                                onChangeText={(value) =>
+                                    updateFormData("licenseNumber", value)
+                                }
                             />
                         </View>
-                        {errors.licenseNumber && <Text style={styles.errorText}>{errors.licenseNumber}</Text>}
+                        {errors.licenseNumber && (
+                            <Text style={styles.errorText}>
+                                {errors.licenseNumber}
+                            </Text>
+                        )}
 
                         {/* Register Button */}
-                        <TouchableOpacity style={styles.registerButton} onPress={handleRegister}>
+                        <TouchableOpacity
+                            style={styles.registerButton}
+                            onPress={handleRegister}
+                        >
                             <LinearGradient
-                                colors={['#4CAF50', '#45A049']}
+                                colors={["#4CAF50", "#45A049"]}
                                 style={styles.buttonGradient}
                             >
-                                <Text style={styles.registerButtonText}>Create Account</Text>
+                                <Text style={styles.registerButtonText}>
+                                    Create Account
+                                </Text>
                             </LinearGradient>
                         </TouchableOpacity>
 
                         {/* Login Link */}
                         <TouchableOpacity
                             style={styles.loginLink}
-                            onPress={() => navigation.navigate('Login')}
+                            onPress={() => navigation.navigate("Login")}
                         >
                             <Text style={styles.loginText}>
-                                Already have an account? <Text style={styles.loginTextBold}>Sign In</Text>
+                                Already have an account?{" "}
+                                <Text style={styles.loginTextBold}>
+                                    Sign In
+                                </Text>
                             </Text>
                         </TouchableOpacity>
                     </View>
@@ -276,15 +424,15 @@ const styles = StyleSheet.create({
     },
     scrollContent: {
         flexGrow: 1,
-        justifyContent: 'center',
+        justifyContent: "center",
         paddingVertical: 20,
     },
     formContainer: {
-        backgroundColor: 'rgba(255, 255, 255, 0.95)',
+        backgroundColor: "rgba(255, 255, 255, 0.95)",
         margin: 20,
         borderRadius: 20,
         padding: 30,
-        shadowColor: '#000',
+        shadowColor: "#000",
         shadowOffset: {
             width: 0,
             height: 5,
@@ -295,35 +443,35 @@ const styles = StyleSheet.create({
     },
     title: {
         fontSize: 28,
-        fontWeight: 'bold',
-        color: '#2E7D32',
-        textAlign: 'center',
+        fontWeight: "bold",
+        color: "#2E7D32",
+        textAlign: "center",
         marginBottom: 5,
     },
     subtitle: {
         fontSize: 16,
-        color: '#666',
-        textAlign: 'center',
+        color: "#666",
+        textAlign: "center",
         marginBottom: 30,
     },
     sectionTitle: {
         fontSize: 18,
-        fontWeight: 'bold',
-        color: '#2E7D32',
+        fontWeight: "bold",
+        color: "#2E7D32",
         marginTop: 20,
         marginBottom: 15,
     },
     inputRow: {
-        flexDirection: 'row',
+        flexDirection: "row",
     },
     inputContainer: {
-        flexDirection: 'row',
-        alignItems: 'center',
+        flexDirection: "row",
+        alignItems: "center",
         borderWidth: 1,
-        borderColor: '#ddd',
+        borderColor: "#ddd",
         borderRadius: 12,
         marginBottom: 5,
-        backgroundColor: '#fff',
+        backgroundColor: "#fff",
     },
     inputIcon: {
         marginLeft: 15,
@@ -336,15 +484,15 @@ const styles = StyleSheet.create({
         fontSize: 16,
     },
     inputError: {
-        borderColor: '#f44336',
+        borderColor: "#f44336",
     },
     eyeIcon: {
-        position: 'absolute',
+        position: "absolute",
         right: 15,
         padding: 5,
     },
     errorText: {
-        color: '#f44336',
+        color: "#f44336",
         fontSize: 12,
         marginBottom: 10,
         marginLeft: 5,
@@ -352,27 +500,27 @@ const styles = StyleSheet.create({
     registerButton: {
         marginTop: 30,
         borderRadius: 12,
-        overflow: 'hidden',
+        overflow: "hidden",
     },
     buttonGradient: {
         paddingVertical: 15,
-        alignItems: 'center',
+        alignItems: "center",
     },
     registerButtonText: {
-        color: '#fff',
+        color: "#fff",
         fontSize: 18,
-        fontWeight: 'bold',
+        fontWeight: "bold",
     },
     loginLink: {
         marginTop: 20,
-        alignItems: 'center',
+        alignItems: "center",
     },
     loginText: {
-        color: '#666',
+        color: "#666",
         fontSize: 14,
     },
     loginTextBold: {
-        color: '#2E7D32',
-        fontWeight: 'bold',
+        color: "#2E7D32",
+        fontWeight: "bold",
     },
 });

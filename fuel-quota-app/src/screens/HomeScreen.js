@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
 import {
     View,
     Text,
@@ -8,18 +8,18 @@ import {
     ScrollView,
     Dimensions,
     Alert,
-} from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
-import { Ionicons } from '@expo/vector-icons';
+} from "react-native";
+import { LinearGradient } from "expo-linear-gradient";
+import { Ionicons } from "@expo/vector-icons";
 import Animated, {
     useSharedValue,
     useAnimatedStyle,
     withSpring,
     withTiming,
-} from 'react-native-reanimated';
-import { useAuth } from '../contexts/AuthContext';
+} from "react-native-reanimated";
+import { useAuth } from "../contexts/AuthContext";
 
-const { width } = Dimensions.get('window');
+const { width } = Dimensions.get("window");
 
 export default function HomeScreen({ navigation }) {
     const { user, logout } = useAuth();
@@ -53,17 +53,19 @@ export default function HomeScreen({ navigation }) {
     });
 
     const handleLogout = () => {
-        Alert.alert(
-            'Logout',
-            'Are you sure you want to logout?',
-            [
-                { text: 'Cancel', style: 'cancel' },
-                { text: 'Logout', onPress: logout, style: 'destructive' },
-            ]
-        );
+        Alert.alert("Logout", "Are you sure you want to logout?", [
+            { text: "Cancel", style: "cancel" },
+            { text: "Logout", onPress: logout, style: "destructive" },
+        ]);
     };
 
-    const MenuCard = ({ icon, title, subtitle, onPress, color = '#4CAF50' }) => {
+    const MenuCard = ({
+        icon,
+        title,
+        subtitle,
+        onPress,
+        color = "#4CAF50",
+    }) => {
         const cardAnim = useSharedValue(1);
 
         const cardStyle = useAnimatedStyle(() => {
@@ -104,26 +106,49 @@ export default function HomeScreen({ navigation }) {
         );
     };
 
+    const StatCard = ({ icon, title, value, color = "#4CAF50" }) => (
+        <View style={styles.statCard}>
+            <View style={[styles.statIcon, { backgroundColor: color }]}>
+                <Ionicons name={icon} size={24} color="#fff" />
+            </View>
+            <Text style={styles.statValue}>{value}</Text>
+            <Text style={styles.statTitle}>{title}</Text>
+        </View>
+    );
 
     return (
         <SafeAreaView style={styles.container}>
             <LinearGradient
-                colors={['#1B5E20', '#2E7D32']}
+                colors={["#1B5E20", "#2E7D32"]}
                 style={styles.header}
             >
                 <View style={styles.headerContent}>
                     <View>
                         <Text style={styles.greeting}>Welcome back,</Text>
-                        <Text style={styles.userName}>{user?.firstName || 'Operator'}</Text>
-                        <Text style={styles.stationName}>{user?.stationName || 'Fuel Station'}</Text>
+                        <Text style={styles.userName}>
+                            {user?.firstName || "Operator"}
+                        </Text>
+                        <Text style={styles.stationName}>
+                            {user?.stationName || "Fuel Station"}
+                        </Text>
                     </View>
-                    <TouchableOpacity onPress={handleLogout} style={styles.logoutButton}>
-                        <Ionicons name="log-out-outline" size={24} color="#fff" />
+                    <TouchableOpacity
+                        onPress={handleLogout}
+                        style={styles.logoutButton}
+                    >
+                        <Ionicons
+                            name="log-out-outline"
+                            size={24}
+                            color="#fff"
+                        />
                     </TouchableOpacity>
                 </View>
             </LinearGradient>
 
-            <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+            <ScrollView
+                style={styles.content}
+                showsVerticalScrollIndicator={false}
+            >
                 <Animated.View style={animatedStyle}>
                     {/* Today's Stats */}
                     <View style={styles.section}>
@@ -158,28 +183,35 @@ export default function HomeScreen({ navigation }) {
                                 icon="qr-code-outline"
                                 title="Scan QR Code"
                                 subtitle="Scan vehicle QR to check quota"
-                                onPress={() => navigation.navigate('QRScanner')}
+                                onPress={() => navigation.navigate("QRScanner")}
                                 color="#4CAF50"
                             />
                             <MenuCard
                                 icon="analytics-outline"
                                 title="Transaction History"
                                 subtitle="View fuel dispensing records"
-                                onPress={() => navigation.navigate('TransactionHistory')}
+                                onPress={() =>
+                                    navigation.navigate("TransactionHistory")
+                                }
                                 color="#2196F3"
                             />
                             <MenuCard
                                 icon="person-outline"
                                 title="Profile"
                                 subtitle="Manage your account"
-                                onPress={() => navigation.navigate('Profile')}
+                                onPress={() => navigation.navigate("Profile")}
                                 color="#9C27B0"
                             />
                             <MenuCard
                                 icon="settings-outline"
                                 title="Settings"
                                 subtitle="App preferences"
-                                onPress={() => Alert.alert('Coming Soon', 'Settings feature will be available soon')}
+                                onPress={() =>
+                                    Alert.alert(
+                                        "Coming Soon",
+                                        "Settings feature will be available soon"
+                                    )
+                                }
                                 color="#607D8B"
                             />
                         </View>
@@ -189,13 +221,21 @@ export default function HomeScreen({ navigation }) {
                     <View style={styles.section}>
                         <Text style={styles.sectionTitle}>Recent Activity</Text>
                         <View style={styles.activityCard}>
-                            <Ionicons name="time-outline" size={20} color="#666" />
+                            <Ionicons
+                                name="time-outline"
+                                size={20}
+                                color="#666"
+                            />
                             <Text style={styles.activityText}>
                                 Last transaction: 25.5L Petrol - 2 minutes ago
                             </Text>
                         </View>
                         <View style={styles.activityCard}>
-                            <Ionicons name="checkmark-circle-outline" size={20} color="#4CAF50" />
+                            <Ionicons
+                                name="checkmark-circle-outline"
+                                size={20}
+                                color="#4CAF50"
+                            />
                             <Text style={styles.activityText}>
                                 Vehicle ABC-1234 quota updated successfully
                             </Text>
@@ -210,7 +250,7 @@ export default function HomeScreen({ navigation }) {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#f5f5f5',
+        backgroundColor: "#f5f5f5",
     },
     header: {
         paddingTop: 20,
@@ -219,30 +259,30 @@ const styles = StyleSheet.create({
         borderBottomRightRadius: 25,
     },
     headerContent: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
+        flexDirection: "row",
+        justifyContent: "space-between",
+        alignItems: "center",
         paddingHorizontal: 20,
     },
     greeting: {
-        color: 'rgba(255, 255, 255, 0.8)',
+        color: "rgba(255, 255, 255, 0.8)",
         fontSize: 16,
     },
     userName: {
-        color: '#fff',
+        color: "#fff",
         fontSize: 24,
-        fontWeight: 'bold',
+        fontWeight: "bold",
         marginTop: 5,
     },
     stationName: {
-        color: 'rgba(255, 255, 255, 0.9)',
+        color: "rgba(255, 255, 255, 0.9)",
         fontSize: 14,
         marginTop: 2,
     },
     logoutButton: {
         padding: 10,
         borderRadius: 20,
-        backgroundColor: 'rgba(255, 255, 255, 0.2)',
+        backgroundColor: "rgba(255, 255, 255, 0.2)",
     },
     content: {
         flex: 1,
@@ -253,22 +293,22 @@ const styles = StyleSheet.create({
     },
     sectionTitle: {
         fontSize: 20,
-        fontWeight: 'bold',
-        color: '#333',
+        fontWeight: "bold",
+        color: "#333",
         marginBottom: 15,
     },
     statsContainer: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
+        flexDirection: "row",
+        justifyContent: "space-between",
     },
     statCard: {
-        backgroundColor: '#fff',
+        backgroundColor: "#fff",
         borderRadius: 15,
         padding: 15,
-        alignItems: 'center',
+        alignItems: "center",
         flex: 1,
         marginHorizontal: 5,
-        shadowColor: '#000',
+        shadowColor: "#000",
         shadowOffset: {
             width: 0,
             height: 2,
@@ -281,32 +321,32 @@ const styles = StyleSheet.create({
         width: 50,
         height: 50,
         borderRadius: 25,
-        justifyContent: 'center',
-        alignItems: 'center',
+        justifyContent: "center",
+        alignItems: "center",
         marginBottom: 10,
     },
     statValue: {
         fontSize: 18,
-        fontWeight: 'bold',
-        color: '#333',
+        fontWeight: "bold",
+        color: "#333",
         marginBottom: 5,
     },
     statTitle: {
         fontSize: 12,
-        color: '#666',
-        textAlign: 'center',
+        color: "#666",
+        textAlign: "center",
     },
     menuGrid: {
-        flexDirection: 'row',
-        flexWrap: 'wrap',
-        justifyContent: 'space-between',
+        flexDirection: "row",
+        flexWrap: "wrap",
+        justifyContent: "space-between",
     },
     menuCard: {
         width: (width - 50) / 2,
         marginBottom: 15,
         borderRadius: 15,
-        overflow: 'hidden',
-        shadowColor: '#000',
+        overflow: "hidden",
+        shadowColor: "#000",
         shadowOffset: {
             width: 0,
             height: 3,
@@ -317,33 +357,33 @@ const styles = StyleSheet.create({
     },
     menuCardGradient: {
         padding: 20,
-        alignItems: 'center',
+        alignItems: "center",
         minHeight: 120,
-        justifyContent: 'center',
+        justifyContent: "center",
     },
     menuCardIcon: {
         marginBottom: 10,
     },
     menuCardTitle: {
-        color: '#fff',
+        color: "#fff",
         fontSize: 16,
-        fontWeight: 'bold',
-        textAlign: 'center',
+        fontWeight: "bold",
+        textAlign: "center",
         marginBottom: 5,
     },
     menuCardSubtitle: {
-        color: 'rgba(255, 255, 255, 0.8)',
+        color: "rgba(255, 255, 255, 0.8)",
         fontSize: 12,
-        textAlign: 'center',
+        textAlign: "center",
     },
     activityCard: {
-        backgroundColor: '#fff',
+        backgroundColor: "#fff",
         borderRadius: 12,
         padding: 15,
         marginBottom: 10,
-        flexDirection: 'row',
-        alignItems: 'center',
-        shadowColor: '#000',
+        flexDirection: "row",
+        alignItems: "center",
+        shadowColor: "#000",
         shadowOffset: {
             width: 0,
             height: 1,
@@ -354,7 +394,7 @@ const styles = StyleSheet.create({
     },
     activityText: {
         marginLeft: 10,
-        color: '#666',
+        color: "#666",
         flex: 1,
     },
 });

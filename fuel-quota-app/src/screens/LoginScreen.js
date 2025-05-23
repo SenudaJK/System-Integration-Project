@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
 import {
     View,
     Text,
@@ -10,23 +10,23 @@ import {
     Platform,
     Alert,
     Dimensions,
-} from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
-import { Ionicons } from '@expo/vector-icons';
+} from "react-native";
+import { LinearGradient } from "expo-linear-gradient";
+import { Ionicons } from "@expo/vector-icons";
 import Animated, {
     useSharedValue,
     useAnimatedStyle,
     withSpring,
     withTiming,
-} from 'react-native-reanimated';
-import { useAuth } from '../contexts/AuthContext';
-import { useLoading } from '../contexts/LoadingContext';
+} from "react-native-reanimated";
+import { useAuth } from "../contexts/AuthContext";
+import { useLoading } from "../contexts/LoadingContext";
 
-const { width, height } = Dimensions.get('window');
+const { width, height } = Dimensions.get("window");
 
 export default function LoginScreen({ navigation }) {
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
+    const [email, setEmail] = useState("");
+    const [password, setPassword] = useState("");
     const [showPassword, setShowPassword] = useState(false);
     const [errors, setErrors] = useState({});
 
@@ -43,20 +43,32 @@ export default function LoginScreen({ navigation }) {
         slideAnim.value = withSpring(0, { damping: 15 });
     }, []);
 
+    useEffect(() => {
+        if (isAuthenticated) {
+            navigation.replace("Home");
+        }
+    }, [isAuthenticated]);
+
+    const animatedStyle = useAnimatedStyle(() => {
+        return {
+            opacity: fadeAnim.value,
+            transform: [{ translateY: slideAnim.value }],
+        };
+    });
 
     const validateForm = () => {
         const newErrors = {};
 
         if (!email.trim()) {
-            newErrors.email = 'Email is required';
+            newErrors.email = "Email is required";
         } else if (!/\S+@\S+\.\S+/.test(email)) {
-            newErrors.email = 'Email is invalid';
+            newErrors.email = "Email is invalid";
         }
 
         if (!password.trim()) {
-            newErrors.password = 'Password is required';
+            newErrors.password = "Password is required";
         } else if (password.length < 6) {
-            newErrors.password = 'Password must be at least 6 characters';
+            newErrors.password = "Password must be at least 6 characters";
         }
 
         setErrors(newErrors);
@@ -66,7 +78,7 @@ export default function LoginScreen({ navigation }) {
     const handleLogin = async () => {
         if (!validateForm()) return;
 
-        showLoading('Signing in...');
+        showLoading("Signing in...");
 
         const result = await login({
             email: email.trim(),
@@ -76,18 +88,18 @@ export default function LoginScreen({ navigation }) {
         hideLoading();
 
         if (!result.success) {
-            Alert.alert('Login Failed', result.error);
+            Alert.alert("Login Failed", result.error);
         }
     };
 
     return (
         <SafeAreaView style={styles.container}>
             <LinearGradient
-                colors={['#1B5E20', '#2E7D32', '#4CAF50']}
+                colors={["#1B5E20", "#2E7D32", "#4CAF50"]}
                 style={styles.gradient}
             >
                 <KeyboardAvoidingView
-                    behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+                    behavior={Platform.OS === "ios" ? "padding" : "height"}
                     style={styles.keyboardView}
                 >
                     <Animated.View style={[styles.content, animatedStyle]}>
@@ -104,9 +116,17 @@ export default function LoginScreen({ navigation }) {
                         <View style={styles.formContainer}>
                             {/* Email Input */}
                             <View style={styles.inputContainer}>
-                                <Ionicons name="mail-outline" size={20} color="#666" style={styles.inputIcon} />
+                                <Ionicons
+                                    name="mail-outline"
+                                    size={20}
+                                    color="#666"
+                                    style={styles.inputIcon}
+                                />
                                 <TextInput
-                                    style={[styles.input, errors.email && styles.inputError]}
+                                    style={[
+                                        styles.input,
+                                        errors.email && styles.inputError,
+                                    ]}
                                     placeholder="Email Address"
                                     value={email}
                                     onChangeText={setEmail}
@@ -115,13 +135,25 @@ export default function LoginScreen({ navigation }) {
                                     autoCorrect={false}
                                 />
                             </View>
-                            {errors.email && <Text style={styles.errorText}>{errors.email}</Text>}
+                            {errors.email && (
+                                <Text style={styles.errorText}>
+                                    {errors.email}
+                                </Text>
+                            )}
 
                             {/* Password Input */}
                             <View style={styles.inputContainer}>
-                                <Ionicons name="lock-closed-outline" size={20} color="#666" style={styles.inputIcon} />
+                                <Ionicons
+                                    name="lock-closed-outline"
+                                    size={20}
+                                    color="#666"
+                                    style={styles.inputIcon}
+                                />
                                 <TextInput
-                                    style={[styles.input, errors.password && styles.inputError]}
+                                    style={[
+                                        styles.input,
+                                        errors.password && styles.inputError,
+                                    ]}
                                     placeholder="Password"
                                     value={password}
                                     onChangeText={setPassword}
@@ -129,35 +161,53 @@ export default function LoginScreen({ navigation }) {
                                     autoCapitalize="none"
                                 />
                                 <TouchableOpacity
-                                    onPress={() => setShowPassword(!showPassword)}
+                                    onPress={() =>
+                                        setShowPassword(!showPassword)
+                                    }
                                     style={styles.eyeIcon}
                                 >
                                     <Ionicons
-                                        name={showPassword ? "eye-outline" : "eye-off-outline"}
+                                        name={
+                                            showPassword
+                                                ? "eye-outline"
+                                                : "eye-off-outline"
+                                        }
                                         size={20}
                                         color="#666"
                                     />
                                 </TouchableOpacity>
                             </View>
-                            {errors.password && <Text style={styles.errorText}>{errors.password}</Text>}
+                            {errors.password && (
+                                <Text style={styles.errorText}>
+                                    {errors.password}
+                                </Text>
+                            )}
 
                             {/* Login Button */}
-                            <TouchableOpacity style={styles.loginButton} onPress={handleLogin}>
+                            <TouchableOpacity
+                                style={styles.loginButton}
+                                onPress={handleLogin}
+                            >
                                 <LinearGradient
-                                    colors={['#4CAF50', '#45A049']}
+                                    colors={["#4CAF50", "#45A049"]}
                                     style={styles.buttonGradient}
                                 >
-                                    <Text style={styles.loginButtonText}>Sign In</Text>
+                                    <Text style={styles.loginButtonText}>
+                                        Sign In
+                                    </Text>
                                 </LinearGradient>
                             </TouchableOpacity>
 
                             {/* Register Link */}
                             <TouchableOpacity
                                 style={styles.registerLink}
-                                onPress={() => navigation.navigate('Register')}
+                                onPress={() => navigation.navigate("Register")}
                             >
                                 <Text style={styles.registerText}>
-                                    Don't have an account? <Text style={styles.registerTextBold}>Register</Text>
+                                    Don't have an account?{" "}
+                                    <Text style={styles.registerTextBold}>
+                                        Register
+                                    </Text>
                                 </Text>
                             </TouchableOpacity>
                         </View>
@@ -180,37 +230,37 @@ const styles = StyleSheet.create({
     },
     content: {
         flex: 1,
-        justifyContent: 'center',
+        justifyContent: "center",
         paddingHorizontal: 30,
     },
     logoContainer: {
-        alignItems: 'center',
+        alignItems: "center",
         marginBottom: 50,
     },
     logoCircle: {
         width: 100,
         height: 100,
         borderRadius: 50,
-        backgroundColor: 'rgba(255, 255, 255, 0.2)',
-        justifyContent: 'center',
-        alignItems: 'center',
+        backgroundColor: "rgba(255, 255, 255, 0.2)",
+        justifyContent: "center",
+        alignItems: "center",
         marginBottom: 20,
     },
     title: {
         fontSize: 28,
-        fontWeight: 'bold',
-        color: '#fff',
+        fontWeight: "bold",
+        color: "#fff",
         marginBottom: 5,
     },
     subtitle: {
         fontSize: 16,
-        color: 'rgba(255, 255, 255, 0.8)',
+        color: "rgba(255, 255, 255, 0.8)",
     },
     formContainer: {
-        backgroundColor: 'rgba(255, 255, 255, 0.95)',
+        backgroundColor: "rgba(255, 255, 255, 0.95)",
         borderRadius: 20,
         padding: 30,
-        shadowColor: '#000',
+        shadowColor: "#000",
         shadowOffset: {
             width: 0,
             height: 5,
@@ -220,13 +270,13 @@ const styles = StyleSheet.create({
         elevation: 10,
     },
     inputContainer: {
-        flexDirection: 'row',
-        alignItems: 'center',
+        flexDirection: "row",
+        alignItems: "center",
         borderWidth: 1,
-        borderColor: '#ddd',
+        borderColor: "#ddd",
         borderRadius: 12,
         marginBottom: 5,
-        backgroundColor: '#fff',
+        backgroundColor: "#fff",
     },
     inputIcon: {
         marginLeft: 15,
@@ -239,15 +289,15 @@ const styles = StyleSheet.create({
         fontSize: 16,
     },
     inputError: {
-        borderColor: '#f44336',
+        borderColor: "#f44336",
     },
     eyeIcon: {
-        position: 'absolute',
+        position: "absolute",
         right: 15,
         padding: 5,
     },
     errorText: {
-        color: '#f44336',
+        color: "#f44336",
         fontSize: 12,
         marginBottom: 10,
         marginLeft: 5,
@@ -255,27 +305,27 @@ const styles = StyleSheet.create({
     loginButton: {
         marginTop: 20,
         borderRadius: 12,
-        overflow: 'hidden',
+        overflow: "hidden",
     },
     buttonGradient: {
         paddingVertical: 15,
-        alignItems: 'center',
+        alignItems: "center",
     },
     loginButtonText: {
-        color: '#fff',
+        color: "#fff",
         fontSize: 18,
-        fontWeight: 'bold',
+        fontWeight: "bold",
     },
     registerLink: {
         marginTop: 20,
-        alignItems: 'center',
+        alignItems: "center",
     },
     registerText: {
-        color: '#666',
+        color: "#666",
         fontSize: 14,
     },
     registerTextBold: {
-        color: '#2E7D32',
-        fontWeight: 'bold',
+        color: "#2E7D32",
+        fontWeight: "bold",
     },
 });
