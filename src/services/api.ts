@@ -155,12 +155,13 @@ export type Vehicle = {
 
 // Define the FuelStation type
 export type FuelStation = {
-  id: string;
+  id: number; // Changed from string to number
   name: string;
   location: string;
-  status: string;
+  ownerName: string;
+  contactNumber: string;
+  active: boolean; // Changed from status to active
   createdAt: string;
-  [key: string]: any; // Add other properties as needed
 };
 
 // Define the FuelDistribution type

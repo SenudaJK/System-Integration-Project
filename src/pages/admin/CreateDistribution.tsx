@@ -9,12 +9,13 @@ interface CreateDistributionProps {
 }
 
 interface FuelStation {
-  id: string;
+  id: number;
   name: string;
   location: string;
-  status: string;
-  city?: string;
-  address?: string;
+  ownerName: string;
+  contactNumber: string;
+  active: boolean;
+  createdAt: string;
 }
 
 const CreateDistribution: React.FC<CreateDistributionProps> = ({ onDistributionCreated }) => {
@@ -40,13 +41,18 @@ const CreateDistribution: React.FC<CreateDistributionProps> = ({ onDistributionC
   const fetchFuelStations = async () => {
     try {
       setLoadingStations(true);
+      console.log('Fetching fuel stations...');
+      
       const stations = await adminApi.getFuelStations();
-      if (!Array.isArray(stations)) {
-        throw new Error('Invalid response: stations is not an array');
-      }
-      const activeStations = stations.filter((station: FuelStation) => 
-        station.status === 'ACTIVE' || station.status === 'APPROVED'
-      );
+      console.log('Raw API response:', stations);
+
+      // Ensure stations is an array before filtering
+      const stationArray: FuelStation[] = Array.isArray(stations) ? stations : [];
+      
+      // Filter only active stations
+      const activeStations = stationArray.filter((station: FuelStation) => station.active === true);
+      console.log('Active stations:', activeStations);
+      
       setFuelStations(activeStations);
     } catch (err) {
       console.error('Failed to fetch fuel stations:', err);
@@ -109,7 +115,7 @@ const CreateDistribution: React.FC<CreateDistributionProps> = ({ onDistributionC
   };
 
   const getSelectedStationName = () => {
-    const selectedStation = fuelStations.find(station => station.id === createForm.fuelStationId);
+    const selectedStation = fuelStations.find(station => station.id === Number(createForm.fuelStationId));
     return selectedStation ? `${selectedStation.name} - ${selectedStation.location}` : '';
   };
 
