@@ -15,8 +15,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../contexts/Authcontext';
 import { useLoading } from '../contexts/LoadingContext';
 
-const RegistrationScreen = () => {
-
+export default function RegisterScreen({ navigation }) {
     const [formData, setFormData] = useState({
         firstName: '',
         lastName: '',
@@ -84,6 +83,7 @@ const RegistrationScreen = () => {
             setErrors(prev => ({ ...prev, [field]: '' }));
         }
     };
+
 
     return (
         <KeyboardAvoidingView
@@ -267,4 +267,112 @@ const RegistrationScreen = () => {
     );
 }
 
-export default RegistrationScreen
+const styles = StyleSheet.create({
+    container: {
+        flex: 1,
+    },
+    gradient: {
+        flex: 1,
+    },
+    scrollContent: {
+        flexGrow: 1,
+        justifyContent: 'center',
+        paddingVertical: 20,
+    },
+    formContainer: {
+        backgroundColor: 'rgba(255, 255, 255, 0.95)',
+        margin: 20,
+        borderRadius: 20,
+        padding: 30,
+        shadowColor: '#000',
+        shadowOffset: {
+            width: 0,
+            height: 5,
+        },
+        shadowOpacity: 0.3,
+        shadowRadius: 10,
+        elevation: 10,
+    },
+    title: {
+        fontSize: 28,
+        fontWeight: 'bold',
+        color: '#2E7D32',
+        textAlign: 'center',
+        marginBottom: 5,
+    },
+    subtitle: {
+        fontSize: 16,
+        color: '#666',
+        textAlign: 'center',
+        marginBottom: 30,
+    },
+    sectionTitle: {
+        fontSize: 18,
+        fontWeight: 'bold',
+        color: '#2E7D32',
+        marginTop: 20,
+        marginBottom: 15,
+    },
+    inputRow: {
+        flexDirection: 'row',
+    },
+    inputContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        borderWidth: 1,
+        borderColor: '#ddd',
+        borderRadius: 12,
+        marginBottom: 5,
+        backgroundColor: '#fff',
+    },
+    inputIcon: {
+        marginLeft: 15,
+        marginRight: 10,
+    },
+    input: {
+        flex: 1,
+        paddingVertical: 15,
+        paddingRight: 50,
+        fontSize: 16,
+    },
+    inputError: {
+        borderColor: '#f44336',
+    },
+    eyeIcon: {
+        position: 'absolute',
+        right: 15,
+        padding: 5,
+    },
+    errorText: {
+        color: '#f44336',
+        fontSize: 12,
+        marginBottom: 10,
+        marginLeft: 5,
+    },
+    registerButton: {
+        marginTop: 30,
+        borderRadius: 12,
+        overflow: 'hidden',
+    },
+    buttonGradient: {
+        paddingVertical: 15,
+        alignItems: 'center',
+    },
+    registerButtonText: {
+        color: '#fff',
+        fontSize: 18,
+        fontWeight: 'bold',
+    },
+    loginLink: {
+        marginTop: 20,
+        alignItems: 'center',
+    },
+    loginText: {
+        color: '#666',
+        fontSize: 14,
+    },
+    loginTextBold: {
+        color: '#2E7D32',
+        fontWeight: 'bold',
+    },
+});
