@@ -152,15 +152,6 @@ type FuelStation = {
   [key: string]: any; // Add other properties as needed
 };
 
-// Define the VehicleType type
-type VehicleType = {
-  id?: number;
-  name: string;
-  description: string;
-  weeklyQuota: number;
-  fuelType: 'PETROL' | 'DIESEL' | 'KEROSENE' | 'ELECTRIC';
-};
-
 // User API
 export const userApi = {
   getVehicles: () => 
@@ -202,4 +193,18 @@ export const stationApi = {
     
   validateVehicle: (registrationNumber: string) => 
     fetchWithAuth(`/station/vehicle/validate?registrationNumber=${registrationNumber}`)
+};
+
+// Fuel Distribution API
+export const distributionApi = {
+  // Create new distribution
+  createDistribution: (distributionData: CreateDistributionRequest) => 
+    fetchWithAuth<FuelDistribution>('/fuel-distributions', {
+      method: 'POST',
+      body: JSON.stringify(distributionData)
+    }),
+
+  // Get recent distributions (helper method for displaying recent distributions)
+  getRecentDistributions: (limit: number = 10) => 
+    fetchWithAuth<FuelDistribution[]>(`/fuel-distributions/recent?limit=${limit}`)
 };
