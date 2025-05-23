@@ -5,6 +5,7 @@ import Login from './pages/auth/Login';
 import Register from './pages/auth/Register';
 import Dashboard from './pages/admin/Dashboard';
 import UserDashboard from './pages/user/Dashboard';
+import FuelDistributions from './pages/admin/FuelDistribution';
 import StationDashboard from './pages/station/Dashboard';
 import AdminRouteGuard from './components/guards/AdminRouteGuard';
 import AuthRouteGuard from './components/guards/AuthRouteGuard';
@@ -27,6 +28,7 @@ function App() {
               {/* Admin routes */}
               <Route path="/admin/" element={<AdminRouteGuard />}>
                 <Route path="dashboard" element={<Dashboard />} />
+                <Route path="fuel-distributions" element={<FuelDistributions />} />
                 {/* Other admin routes */}
               </Route>
               

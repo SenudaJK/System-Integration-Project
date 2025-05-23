@@ -60,7 +60,7 @@ const Sidebar: React.FC<SidebarProps> = ({
   
   const userLinks = [
     { to: '/dashboard', label: 'Dashboard', icon: <Home size={20} /> },
-    { to: '/vehicles', label: 'Fuel Distributions', icon: <Truck size={20} /> },
+    { to: '/admin/fuel-distributions', label: 'Fuel Distributions', icon: <Truck size={20} /> },
     { to: '/quota', label: 'Fuel Quota', icon: <Droplet size={20} /> },
   ];
   
