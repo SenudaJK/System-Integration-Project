@@ -1,12 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
-import QRCode from 'qrcode.react';
 import axios from 'axios';
 
 const QrCodePage: React.FC = () => {
   const location = useLocation();
   const { email } = location.state || { email: '' }; // Retrieve the email passed via navigation
-  const [vehicleInfo, setVehicleInfo] = useState<{ vehicleNumber: string } | null>(null);
+  const [vehicleInfo, setVehicleInfo] = useState<{ qrCode: string; vehicleNumber: string } | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -15,7 +14,10 @@ const QrCodePage: React.FC = () => {
         const response = await axios.get('http://localhost:8080/api/vehicle/vehicle-info-by-owner-email', {
           params: { email },
         });
-        setVehicleInfo(response.data);
+
+        // Assuming the API returns an array, take the first item
+        const vehicleData = response.data[0];
+        setVehicleInfo(vehicleData);
       } catch (err) {
         console.error('Failed to fetch vehicle info:', err);
         setError('Failed to fetch vehicle information. Please try again.');
@@ -38,7 +40,11 @@ const QrCodePage: React.FC = () => {
             <p className="text-lg text-neutral-800 mb-4">
               Vehicle Number: <strong>{vehicleInfo.vehicleNumber}</strong>
             </p>
-            <QRCode value={vehicleInfo.vehicleNumber} size={200} />
+            <img
+              src={`data:image/png;base64,${vehicleInfo.qrCode}`}
+              alt="QR Code"
+              className="mx-auto"
+            />
           </>
         ) : (
           <p className="text-neutral-600">Loading vehicle information...</p>
