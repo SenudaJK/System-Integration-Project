@@ -73,7 +73,14 @@ public class FuelStationService {
         fuelStationRepository.deleteById(id);
     }
 
-
+    @Transactional
+    public FuelStationDTO approveFuelStation(Long id) {
+        FuelStation fuelStation = fuelStationRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Fuel station not found with id: " + id));
+        fuelStation.setActive(true);
+        FuelStation updatedFuelStation = fuelStationRepository.save(fuelStation);
+        return mapToDTO(updatedFuelStation);
+    }
 
 
 
