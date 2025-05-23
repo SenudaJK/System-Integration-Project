@@ -163,7 +163,6 @@ export type FuelStation = {
   createdAt: string;
 };
 
-// Define the FuelDistribution type
 export type FuelDistribution = {
   id: string;
   distributionReference?: string;
@@ -179,7 +178,6 @@ export type FuelDistribution = {
   notes?: string;
 };
 
-// User API
 export const userApi = {
   getVehicles: () => 
     fetchWithAuth('/user/vehicles'),
@@ -222,7 +220,6 @@ export const stationApi = {
     fetchWithAuth(`/station/vehicle/validate?registrationNumber=${registrationNumber}`)
 };
 
-// Define the CreateDistributionRequest type
 export type CreateDistributionRequest = {
   fuelStationId: number;
   fuelAmount: number;
@@ -230,16 +227,18 @@ export type CreateDistributionRequest = {
   notes?: string;
 };
 
-// Fuel Distribution API
 export const distributionApi = {
-  // Create new distribution
   createDistribution: (distributionData: CreateDistributionRequest) => 
     fetchWithAuth<FuelDistribution>('/fuel-distributions', {
       method: 'POST',
       body: JSON.stringify(distributionData)
     }),
 
-  // Get recent distributions (helper method for displaying recent distributions)
+  updateDistributionStatus: (id: number, status: string) => 
+  fetchWithAuth<FuelDistribution>(`/fuel-distributions/${id}/status?status=${status}`, {
+    method: 'PUT'
+  }),
+
   getRecentDistributions: (limit: number = 10) => 
     fetchWithAuth<FuelDistribution[]>(`/fuel-distributions/recent?limit=${limit}`)
 };

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import CreateDistribution from '../admin/CreateDistribution';
 import DistributionList from '../admin/DistributionList';
 import DistributionStats from '../admin/DistributionStats';
+import StatusUpdateModal from '../admin/StatusUpdateModal';
 import Card from '../../components/ui/Card';
 import { distributionApi, FuelDistribution as FuelDistributionType } from '../../services/api';
 
@@ -9,6 +10,8 @@ const FuelDistributions: React.FC = () => {
   const [distributions, setDistributions] = useState<FuelDistributionType[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
+  const [selectedDistribution, setSelectedDistribution] = useState<FuelDistributionType | null>(null);
+  const [showStatusModal, setShowStatusModal] = useState(false);
 
   useEffect(() => {
     fetchDistributions();
@@ -17,13 +20,13 @@ const FuelDistributions: React.FC = () => {
   const fetchDistributions = async () => {
     try {
       setIsLoading(true);
-      setError(''); // Clear previous errors
-      const data = await distributionApi.getRecentDistributions(50); // Increased limit
+      setError(''); 
+      const data = await distributionApi.getRecentDistributions(50);
       setDistributions(data);
     } catch (err: any) {
       setError('Failed to load distributions: ' + (err.message || 'Unknown error'));
       console.error(err);
-      setDistributions([]); // Ensure it's always an array
+      setDistributions([]);
     } finally {
       setIsLoading(false);
     }
@@ -34,14 +37,20 @@ const FuelDistributions: React.FC = () => {
   };
 
   const handleStatusUpdate = (distribution: FuelDistributionType) => {
-    // For now, just log it since you don't have the status update modal yet
-    console.log('Status update requested for:', distribution);
-    // You can implement the status update modal later
+    setSelectedDistribution(distribution);
+    setShowStatusModal(true);
+  };
+
+  const handleStatusUpdated = (updatedDistribution: FuelDistributionType) => {
+    setDistributions(distributions.map(d => 
+      d.id === updatedDistribution.id ? updatedDistribution : d
+    ));
+    setShowStatusModal(false);
+    setSelectedDistribution(null);
   };
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Fuel Distribution Management</h1>
@@ -49,8 +58,6 @@ const FuelDistributions: React.FC = () => {
         </div>
         <CreateDistribution onDistributionCreated={handleDistributionCreated} />
       </div>
-
-      {/* Quick Stats */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <Card className="bg-gradient-to-br from-blue-600 to-blue-500 text-white">
           <div className="p-6">
@@ -88,6 +95,15 @@ const FuelDistributions: React.FC = () => {
         error={error}
         onStatusUpdate={handleStatusUpdate}
         onRefresh={fetchDistributions}
+      />
+      <StatusUpdateModal
+        isOpen={showStatusModal}
+        distribution={selectedDistribution}
+        onClose={() => {
+          setShowStatusModal(false);
+          setSelectedDistribution(null);
+        }}
+        onStatusUpdate={handleStatusUpdated}
       />
     </div>
   );
