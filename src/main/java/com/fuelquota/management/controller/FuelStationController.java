@@ -53,7 +53,11 @@ public class FuelStationController {
         return ResponseEntity.noContent().build();
     }
 
-
+    @PatchMapping("/{id}/approve")
+    public ResponseEntity<FuelStationDTO> approveFuelStation(@PathVariable Long id) {
+        FuelStationDTO approvedFuelStation = fuelStationService.approveFuelStation(id);
+        return ResponseEntity.ok(approvedFuelStation);
+}
 
 
 
