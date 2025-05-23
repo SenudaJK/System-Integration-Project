@@ -11,6 +11,7 @@ import { AuthProvider } from './src/contexts/Authcontext';
 import { LoadingProvider } from './src/contexts/Loadingcontext';
 
 import RegisterScreen from './src/screens/RegisterScreen';
+import LoginScreen from './src/screens/LoginScreen';
 
 const Stack = createStackNavigator();
 
@@ -60,6 +61,11 @@ export default function App() {
                 },
               }}
             >
+              <Stack.Screen
+                name="Login"
+                component={LoginScreen}
+                options={{ headerShown: false }}
+              />
               <Stack.Screen
                 name="Register"
                 component={RegisterScreen}
