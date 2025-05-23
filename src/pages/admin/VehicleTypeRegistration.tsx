@@ -77,7 +77,12 @@ const VehicleTypeRegistration: React.FC = () => {
     setIsSubmitting(true);
     
     try {
-      const response = await adminApi.createVehicleType(formData);
+      const now = new Date().toISOString();
+      const response = await adminApi.createVehicleType({
+        ...formData,
+        createdAt: now,
+        updatedAt: now
+      });
       console.log('Vehicle type created:', response);
       
       setSuccessMessage('Vehicle type successfully registered!');

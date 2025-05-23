@@ -1,35 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { Plus } from 'lucide-react';
 import CreateDistribution from '../admin/CreateDistribution';
-import Button from '../../components/ui/Button';
 import Card from '../../components/ui/Card';
-import { distributionApi } from '../../services/api';
-
-interface FuelDistribution {
-  id: number;
-  fuelStation: {
-    id: number;
-    name: string;
-    address: string;
-    city: string;
-  };
-  fuelAmount: number;
-  fuelType: 'PETROL' | 'DIESEL' | 'KEROSENE';
-  distributionDate: string;
-  status: 'PENDING' | 'IN_TRANSIT' | 'DELIVERED' | 'CANCELLED';
-  distributionReference: string;
-  completedDate?: string;
-}
+import { distributionApi, FuelDistribution as FuelDistributionType } from '../../services/api';
 
 const FuelDistributions: React.FC = () => {
-  const [distributions, setDistributions] = useState<FuelDistribution[]>([]);
+  const [distributions, setDistributions] = useState<FuelDistributionType[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
 
   useEffect(() => {
     fetchDistributions();
   }, []);
-
   const fetchDistributions = async () => {
     try {
       setIsLoading(true);
@@ -43,7 +24,7 @@ const FuelDistributions: React.FC = () => {
     }
   };
 
-  const handleDistributionCreated = (newDistribution: FuelDistribution) => {
+  const handleDistributionCreated = (newDistribution: FuelDistributionType) => {
     setDistributions([newDistribution, ...distributions]);
   };
 

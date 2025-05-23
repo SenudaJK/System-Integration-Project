@@ -2,10 +2,10 @@ import React, { useState } from 'react';
 import { Plus } from 'lucide-react';
 import Button from '../../components/ui/Button';
 import Modal from '../../components/ui/Modal';
-import { distributionApi } from '../../services/api';
+import { distributionApi, FuelDistribution } from '../../services/api';
 
 interface CreateDistributionProps {
-  onDistributionCreated: (newDistribution: any) => void;
+  onDistributionCreated: (newDistribution: FuelDistribution) => void;
 }
 
 const CreateDistribution: React.FC<CreateDistributionProps> = ({ onDistributionCreated }) => {

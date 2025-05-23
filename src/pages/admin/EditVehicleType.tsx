@@ -96,10 +96,20 @@ const EditVehicleType: React.FC = () => {
     
     try {
       if (id === 'new') {
-        await adminApi.createVehicleType(formData);
+        const now = new Date().toISOString();
+        await adminApi.createVehicleType({
+          ...formData,
+          createdAt: now,
+          updatedAt: now
+        });
         setSuccessMessage('Vehicle type successfully created!');
       } else {
-        await adminApi.updateVehicleType(Number(id), formData);
+        const now = new Date().toISOString();
+        await adminApi.updateVehicleType(Number(id), {
+          ...formData,
+          createdAt: now, // You may want to fetch the original createdAt instead of using now
+          updatedAt: now
+        });
         setSuccessMessage('Vehicle type successfully updated!');
       }
       

@@ -1,4 +1,3 @@
-import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import Login from './pages/auth/Login';
@@ -15,6 +14,7 @@ import Layout from './components/layout/Layout';
 import Unauthorized from './pages/Unauthorized';
 import VehicleTypesList from './pages/admin/VehicleTypesList';
 import EditVehicleType from './pages/admin/EditVehicleType';
+import VehicleTypeRegistration from './pages/admin/VehicleTypeRegistration';
 
 function App() {
   return (
@@ -25,13 +25,17 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/unauthorized" element={<Unauthorized />} />
-          
-          {/* Protected routes for all authenticated users */}
+            {/* Protected routes for all authenticated users */}
           <Route element={<AuthRouteGuard />}>
             <Route element={<Layout />}>
+              
               {/* Admin routes */}
-              <Route path="admin" element={<AdminRouteGuard />}>
-                <Route path="dashboard" element={<Dashboard />} />
+              <Route path="admin" element={<AdminRouteGuard />}>                <Route path="dashboard" element={<Dashboard />} />
+                <Route path="vehicle-types" element={<VehicleTypesList />} />
+                <Route path="vehicle-types/new" element={<EditVehicleType />} />
+                <Route path="vehicle-types/edit/:id" element={<EditVehicleType />} />
+                <Route path="vehicle-types/register" element={<VehicleTypeRegistration />} />
+                <Route path="fuel-distributions" element={<FuelDistributions />} />
                 {/* Other admin routes */}
               </Route>
               

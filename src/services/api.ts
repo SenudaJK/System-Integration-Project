@@ -5,6 +5,17 @@
 // Make sure this matches exactly with your backend URL
 const API_BASE_URL = 'http://localhost:8080/api';
 
+// Define the VehicleType type
+export type VehicleType = {
+  id: number;
+  name: string;
+  description: string;
+  weeklyQuota: number;
+  fuelType: 'PETROL' | 'DIESEL' | 'KEROSENE' | 'ELECTRIC';
+  createdAt: string;
+  updatedAt: string;
+};
+
 // Helper function to append JWT token to requests
 const getAuthHeaders = () => {
   const token = localStorage.getItem('token');
@@ -136,20 +147,36 @@ export const adminApi = {
 };
 
 // Define the Vehicle type
-type Vehicle = {
+export type Vehicle = {
   id: string;
   remainingQuota: number;
   [key: string]: any; // Add other properties as needed
 };
 
 // Define the FuelStation type
-type FuelStation = {
+export type FuelStation = {
   id: string;
   name: string;
   location: string;
   status: string;
   createdAt: string;
   [key: string]: any; // Add other properties as needed
+};
+
+// Define the FuelDistribution type
+export type FuelDistribution = {
+  id: string;
+  distributionReference?: string;
+  fuelStation: {
+    id: string;
+    name: string;
+    city: string;
+  };
+  fuelType: string;
+  fuelAmount: number;
+  status: 'PENDING' | 'IN_TRANSIT' | 'DELIVERED' | 'CANCELLED';
+  distributionDate: string;
+  notes?: string;
 };
 
 // User API
@@ -193,6 +220,14 @@ export const stationApi = {
     
   validateVehicle: (registrationNumber: string) => 
     fetchWithAuth(`/station/vehicle/validate?registrationNumber=${registrationNumber}`)
+};
+
+// Define the CreateDistributionRequest type
+export type CreateDistributionRequest = {
+  fuelStationId: number;
+  fuelAmount: number;
+  fuelType: 'PETROL' | 'DIESEL' | 'KEROSENE';
+  notes?: string;
 };
 
 // Fuel Distribution API
