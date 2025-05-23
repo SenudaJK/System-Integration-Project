@@ -45,6 +45,29 @@ public class FuelStationService {
                 .collect(Collectors.toList());
     }
 
+    @Transactional
+    public FuelStationDTO updateFuelStation(Long id, FuelStationDTO fuelStationDTO) {
+        FuelStation existingFuelStation = fuelStationRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Fuel station not found with id: " + id));
+
+        // Check if contact number is being changed and if it's already in use
+        if (!existingFuelStation.getContactNumber().equals(fuelStationDTO.getContactNumber()) &&
+                fuelStationRepository.findByContactNumber(fuelStationDTO.getContactNumber()).isPresent()) {
+            throw new IllegalArgumentException("Contact number already exists");
+        }
+
+        existingFuelStation.setName(fuelStationDTO.getName());
+        existingFuelStation.setLocation(fuelStationDTO.getLocation());
+        existingFuelStation.setOwnerName(fuelStationDTO.getOwnerName());
+        existingFuelStation.setContactNumber(fuelStationDTO.getContactNumber());
+
+        FuelStation updatedFuelStation = fuelStationRepository.save(existingFuelStation);
+        return mapToDTO(updatedFuelStation);
+    }
+
+
+
+
 
     private FuelStation mapToEntity(FuelStationDTO dto) {
         FuelStation fuelStation = new FuelStation();
