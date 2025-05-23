@@ -1,22 +1,22 @@
-import React, { createContext, useContext, useState } from 'react';
-import { View, ActivityIndicator, StyleSheet } from 'react-native';
-import Modal from 'react-native-modal';
+import React, { createContext, useContext, useState } from "react";
+import { View, ActivityIndicator, StyleSheet } from "react-native";
+import Modal from "react-native-modal";
 
 const LoadingContext = createContext();
 
 export const useLoading = () => {
     const context = useContext(LoadingContext);
     if (!context) {
-        throw new Error('useLoading must be used within a LoadingProvider');
+        throw new Error("useLoading must be used within a LoadingProvider");
     }
     return context;
 };
 
 export const LoadingProvider = ({ children }) => {
     const [isLoading, setIsLoading] = useState(false);
-    const [loadingMessage, setLoadingMessage] = useState('Loading...');
+    const [loadingMessage, setLoadingMessage] = useState("Loading...");
 
-    const showLoading = (message = 'Loading...') => {
+    const showLoading = (message = "Loading...") => {
         setLoadingMessage(message);
         setIsLoading(true);
     };
@@ -45,13 +45,13 @@ export const LoadingProvider = ({ children }) => {
 
 const styles = StyleSheet.create({
     modal: {
-        justifyContent: 'center',
-        alignItems: 'center',
+        justifyContent: "center",
+        alignItems: "center",
     },
     loadingContainer: {
-        backgroundColor: 'white',
+        backgroundColor: "white",
         padding: 30,
         borderRadius: 10,
-        alignItems: 'center',
+        alignItems: "center",
     },
 });
