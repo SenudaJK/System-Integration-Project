@@ -49,13 +49,13 @@ const Sidebar: React.FC<SidebarProps> = ({
   const location = useLocation();
   const { user, logout } = useAuth();
   
-  const isActive = (path: string) => location.pathname === path;
-    const adminLinks = [
+  const isActive = (path: string) => location.pathname === path;    const adminLinks = [
     { to: '/admin/dashboard', label: 'Dashboard', icon: <Home size={20} /> },
     { to: '/admin/stations', label: 'Fuel Stations', icon: <Map size={20} /> },
     { to: '/admin/transactions', label: 'Transactions', icon: <BarChart2 size={20} /> },
     { to: '/admin/users', label: 'Users', icon: <Users size={20} /> },
     { to: '/admin/vehicle-types', label: 'Vehicle Types', icon: <Truck size={20} /> },
+    { to: '/admin/vehicle-types/register', label: 'Register Vehicle Type', icon: <FilePlus size={20} /> },
     { to: '/admin/fuel-distributions', label: 'Fuel Distributions', icon: <Droplet size={20} /> },
   ];
   

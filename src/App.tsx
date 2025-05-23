@@ -24,13 +24,13 @@ function App() {
           {/* Public routes */}
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
-          <Route path="/unauthorized" element={<Unauthorized />} />
-            {/* Protected routes for all authenticated users */}
+          <Route path="/unauthorized" element={<Unauthorized />} />          {/* Protected routes for all authenticated users */}
           <Route element={<AuthRouteGuard />}>
             <Route element={<Layout />}>
               
               {/* Admin routes */}
-              <Route path="admin" element={<AdminRouteGuard />}>                <Route path="dashboard" element={<Dashboard />} />
+              <Route path="admin" element={<AdminRouteGuard />}>
+                <Route path="dashboard" element={<Dashboard />} />
                 <Route path="vehicle-types" element={<VehicleTypesList />} />
                 <Route path="vehicle-types/new" element={<EditVehicleType />} />
                 <Route path="vehicle-types/edit/:id" element={<EditVehicleType />} />
