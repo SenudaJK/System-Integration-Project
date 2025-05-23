@@ -6,36 +6,23 @@ import * as Font from 'expo-font';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 
+// Import screens
+import LoginScreen from './src/screens/LoginScreen';
+import RegisterScreen from './src/screens/RegisterScreen';
+import HomeScreen from './src/screens/HomeScreen';
+import QRScannerScreen from './src/screens/QRScannerScreen';
+import FuelEntryScreen from './src/screens/FuelEntryScreen';
+import TransactionHistoryScreen from './src/screens/TransactionHistoryScreen'; // Added missing semicolon
+import ProfileScreen from './src/screens/ProfileScreen';
+
 // Import contexts
 import { AuthProvider } from './src/contexts/AuthContext';
 import { LoadingProvider } from './src/contexts/LoadingContext';
-
-import RegisterScreen from './src/screens/RegisterScreen';
-import LoginScreen from './src/screens/LoginScreen';
-import ProfileScreen from './src/screens/ProfileScreen';
-import HomeScreen from './src/screens/HomeScreen';
-import FuelEntryScreen from './src/screens/FuelEntryScreen';
 
 const Stack = createStackNavigator();
 
 export default function App() {
   const [appIsReady, setAppIsReady] = useState(false);
-
-  useEffect(() => {
-    async function prepare() {
-      try {
-        await SplashScreen.preventAutoHideAsync();
-
-      } catch (e) {
-        console.warn(e);
-      } finally {
-        // Tell the application to render
-        setAppIsReady(true);
-      }
-    }
-
-    prepare();
-  }, []);
 
   useEffect(() => {
     if (appIsReady) {
@@ -80,9 +67,19 @@ export default function App() {
                 options={{ headerShown: false }}
               />
               <Stack.Screen
+                name="QRScanner"
+                component={QRScannerScreen}
+                options={{ title: 'Scan QR Code' }}
+              />
+              <Stack.Screen
                 name="FuelEntry"
                 component={FuelEntryScreen}
                 options={{ title: 'Fuel Entry' }}
+              />
+              <Stack.Screen
+                name="TransactionHistory"
+                component={TransactionHistoryScreen}
+                options={{ title: 'Transaction History' }}
               />
               <Stack.Screen
                 name="Profile"
