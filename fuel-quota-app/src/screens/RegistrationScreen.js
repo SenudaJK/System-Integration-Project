@@ -13,7 +13,7 @@ import {
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../contexts/Authcontext';
-import { useLoading } from '../contexts/LoadingContext';
+import { useLoading } from '../contexts/Loadingcontext';
 
 export default function RegisterScreen({ navigation }) {
     const [formData, setFormData] = useState({
