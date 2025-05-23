@@ -65,6 +65,14 @@ public class FuelStationService {
         return mapToDTO(updatedFuelStation);
     }
 
+    @Transactional
+    public void deleteFuelStation(Long id) {
+        if (!fuelStationRepository.existsById(id)) {
+            throw new EntityNotFoundException("Fuel station not found with id: " + id);
+        }
+        fuelStationRepository.deleteById(id);
+    }
+
 
 
 
