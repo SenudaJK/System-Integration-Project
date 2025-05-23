@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import CreateDistribution from '../admin/CreateDistribution';
+import DistributionList from '../admin/DistributionList';
 import Card from '../../components/ui/Card';
 import { distributionApi, FuelDistribution as FuelDistributionType } from '../../services/api';
 
