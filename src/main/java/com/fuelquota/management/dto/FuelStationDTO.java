@@ -31,6 +31,10 @@ public class FuelStationDTO {
     @Pattern(regexp = "^[0-9]{10}$", message = "Contact number must be exactly 10 digits")
     private String contactNumber;
 
+    @NotBlank(message = "Password is required")
+    @Size(min = 8, message = "Password must be at least 8 characters")
+    private String password;
+
     private boolean active;
     private LocalDateTime createdAt;
 
@@ -44,12 +48,13 @@ public class FuelStationDTO {
      * Full constructor for creating a complete DTO object
      */
     public FuelStationDTO(Long id, String name, String location, String ownerName,
-                          String contactNumber, boolean active, LocalDateTime createdAt) {
+                          String contactNumber, String password, boolean active, LocalDateTime createdAt) {
         this.id = id;
         this.name = name;
         this.location = location;
         this.ownerName = ownerName;
         this.contactNumber = contactNumber;
+        this.password = password;
         this.active = active;
         this.createdAt = createdAt;
     }
