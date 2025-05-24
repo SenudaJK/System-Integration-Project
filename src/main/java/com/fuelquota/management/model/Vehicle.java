@@ -21,9 +21,9 @@ public class Vehicle {
     @Column(nullable = false, unique = true)
     private String chassisNumber;
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private VehicleType vehicleType;
+    @ManyToOne
+    @JoinColumn(name = "vehicle_type_id", nullable = false)
+    private VehicleTypeEntity vehicleType;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
@@ -39,11 +39,37 @@ public class Vehicle {
     @Column(columnDefinition = "TEXT") // Add the qr_code column
     private String qrCode;
 
-    public enum VehicleType {
+    @Column(name = "weekly_available_quantity", nullable = false)
+    private Double weeklyAvailableQuantity = 0.0;
+
+    // Keep the enum for backwards compatibility with existing code that might use it
+    public enum VehicleTypeEnum {
         MOTORCYCLE, THREE_WHEELER, CAR, VAN, BUS, LORRY, TRUCK, HEAVY_VEHICLE
+    }    public enum FuelType {
+        DIESEL, ELECTRIC, KEROSENE, PETROL
     }
 
-    public enum FuelType {
-        PETROL_92, PETROL_95, DIESEL, SUPER_DIESEL, KEROSENE
+    // Helper method to get weekly quota from vehicle type
+    public Double getWeeklyQuota() {
+        return vehicleType != null ? vehicleType.getWeeklyQuota() : 0.0;
+    }
+
+    // Helper method to reset weekly available quantity (can be called weekly)
+    public void resetWeeklyQuantity() {
+        this.weeklyAvailableQuantity = getWeeklyQuota();
+    }
+
+    // Helper method to check if fuel can be dispensed
+    public boolean canDispenseFuel(Double requestedAmount) {
+        return weeklyAvailableQuantity >= requestedAmount;
+    }
+
+    // Helper method to dispense fuel (reduces available quantity)
+    public boolean dispenseFuel(Double amount) {
+        if (canDispenseFuel(amount)) {
+            weeklyAvailableQuantity -= amount;
+            return true;
+        }
+        return false;
     }
 }
