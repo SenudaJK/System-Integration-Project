@@ -1,10 +1,53 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { LogOut, Menu, X, Home, Package, Settings, User } from 'lucide-react';
+import axios from 'axios';
 
 const NavBar: React.FC = () => {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const navigate = useNavigate();
+    const [ownerName, setOwnerName] = useState('Loading...');
+
+    useEffect(() => {
+        const fetchUserDetails = async () => {
+            const token = localStorage.getItem('token');
+            if (token) {
+                try {
+                    const response = await axios.get('http://localhost:8080/api/fuel-stations/me', {
+                        headers: { Authorization: `Bearer ${token}` },
+                    });
+                    const data = response.data;
+                    setOwnerName(data.ownerName || 'Unknown User');
+                } catch (err: any) {
+                    if (err.response) {
+                        console.error(
+                            'Error fetching user details:',
+                            `Status: ${err.response.status}, Response: ${JSON.stringify(err.response.data)}`
+                        );
+                        if (err.response.status === 401) {
+                            setOwnerName('Authentication Failed - Invalid Token');
+                        } else if (err.response.status === 404) {
+                            setOwnerName('User Not Found');
+                        } else if (err.response.status === 500) {
+                            setOwnerName('Server Error - Check Backend Logs');
+                        } else {
+                            setOwnerName('Error Loading User');
+                        }
+                    } else if (err.request) {
+                        console.error('Error fetching user details: No response received', err.message);
+                        setOwnerName('Server Unreachable - Check if Backend is Running');
+                    } else {
+                        console.error('Error fetching user details:', err.message);
+                        setOwnerName('Error Loading User');
+                    }
+                }
+            } else {
+                console.warn('No token found in localStorage');
+                setOwnerName('Not Logged In');
+            }
+        };
+        fetchUserDetails();
+    }, []);
 
     const handleLogout = () => {
         // Clear authentication data (e.g., JWT token)
@@ -55,16 +98,8 @@ const NavBar: React.FC = () => {
                 {/* User Profile and Logout */}
                 <div className="p-4 border-t border-blue-800">
                     <div className="flex items-center mb-4">
-                        <div className="w-10 h-10 bg-gray-300 rounded-full overflow-hidden mr-3">
-                            <img
-                                src="https://via.placeholder.com/40"
-                                alt="User Profile"
-                                className="w-full h-full object-cover"
-                            />
-                        </div>
                         <div>
-                            <p className="text-sm font-medium text-black">Thomas Schneider</p>
-                            <p className="text-xs text-black">Admin</p>
+                            <p className="text-sm font-medium text-black">{ownerName}</p>
                         </div>
                     </div>
                     <button
