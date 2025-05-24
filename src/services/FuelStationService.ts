@@ -1,13 +1,13 @@
 import axios from 'axios';
 
-axios.defaults.baseURL = 'http://localhost:8082';
+axios.defaults.baseURL = 'http://localhost:8080';
 
 interface FuelStationForm {
     name: string;
     location: string;
     ownerName: string;
     contactNumber: string;
-    password: string; // Added password field
+    password: string;
     active: boolean;
 }
 
@@ -17,8 +17,8 @@ interface LoginCredentials {
 }
 
 interface LoginResponse {
-    message: string; // Adjusted based on backend response ("Login successful")
-    token?: string;  // Optional token field for future JWT implementation
+    message: string;
+    token?: string;
 }
 
 export class FuelStationService {
