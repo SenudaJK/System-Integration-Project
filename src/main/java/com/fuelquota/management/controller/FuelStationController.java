@@ -4,6 +4,9 @@ import com.fuelquota.management.dto.FuelStationDTO;
 import com.fuelquota.management.service.FuelStationService;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -57,9 +60,20 @@ public class FuelStationController {
     public ResponseEntity<FuelStationDTO> approveFuelStation(@PathVariable Long id) {
         FuelStationDTO approvedFuelStation = fuelStationService.approveFuelStation(id);
         return ResponseEntity.ok(approvedFuelStation);
-}
+    }
 
-
+    @PostMapping("/login")
+    public ResponseEntity<String> login(@Valid @RequestBody LoginRequest loginRequest) {
+        try {
+            if (fuelStationService.login(loginRequest.contactNumber(), loginRequest.password())) {
+                return ResponseEntity.ok("Login successful");
+            } else {
+                return new ResponseEntity<>("Invalid credentials", HttpStatus.UNAUTHORIZED);
+            }
+        } catch (Exception e) {
+            return new ResponseEntity<>("Login failed: " + e.getMessage(), HttpStatus.UNAUTHORIZED);
+        }
+    }
 
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<String> handleIllegalArgumentException(IllegalArgumentException ex) {
@@ -71,3 +85,13 @@ public class FuelStationController {
         return new ResponseEntity<>(ex.getMessage(), HttpStatus.NOT_FOUND);
     }
 }
+
+record LoginRequest(
+        @NotBlank(message = "Contact number is required")
+        @Pattern(regexp = "^[0-9]{10}$", message = "Contact number must be exactly 10 digits")
+        String contactNumber,
+
+        @NotBlank(message = "Password is required")
+        @Size(min = 8, message = "Password must be at least 8 characters")
+        String password
+) {}
