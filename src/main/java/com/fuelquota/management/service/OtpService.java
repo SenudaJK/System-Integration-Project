@@ -1,7 +1,6 @@
 package com.fuelquota.management.service;
 
 import com.fuelquota.management.model.OtpRecord;
-import com.fuelquota.management.model.OtpRecord.OtpPurpose;
 import com.fuelquota.management.repository.OtpRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -25,10 +24,8 @@ public class OtpService {
     @Transactional 
     public void generateAndSendOtp(String email, OtpRecord.OtpPurpose purpose) {
         // Delete any existing OTP records for this email and purpose
-        otpRepository.deleteByEmailAndPurpose(email, purpose);
-
-        // Generate a random 6-digit OTP
-        String otp = String.valueOf(100000 + new Random().nextInt(900000));
+        otpRepository.deleteByEmailAndPurpose(email, purpose);        // Generate a random 6-digit OTP
+        String otp = generateOtp();
 
         // Save the OTP record in the database
         OtpRecord otpRecord = new OtpRecord();
