@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Check, X } from 'lucide-react';
 import Navbar from '../Components/NavBar';
+import { FuelStationService } from '../services/FuelStationService';
 
 interface Order {
     orderId: number;
@@ -17,32 +18,32 @@ const OrderPage: React.FC = () => {
     const [orderDate, setOrderDate] = useState('');
     const [orderAmount, setOrderAmount] = useState('');
     const [fuelType, setFuelType] = useState(fuelTypes[0]);
+    const [fuelStationId, setFuelStationId] = useState<number | null>(null);
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
 
-    // Fetch all orders on component mount
     useEffect(() => {
-        fetchOrders();
+        const fetchData = async () => {
+            try {
+                const data = await FuelStationService.getCurrentFuelStation();
+                setFuelStationId(data.id);
+                const response = await FuelStationService.getAllOrders();
+                setOrders(response);
+                setError('');
+            } catch (err) {
+                setError('Failed to fetch orders or fuel station details.');
+            }
+        };
+        fetchData();
     }, []);
-
-    const fetchOrders = async () => {
-        try {
-            const response = await axios.get('http://localhost:8080/api/orders');
-            setOrders(response.data);
-            setError('');
-        } catch (err) {
-            setError('Failed to fetch orders. Please try again.');
-        }
-    };
 
     const handleCreateOrder = async (e: React.FormEvent) => {
         e.preventDefault();
         setError('');
         setSuccess('');
 
-        // Validate inputs
-        if (!orderDate || !orderAmount || !fuelType) {
-            setError('All fields are required.');
+        if (!fuelStationId) {
+            setError('Fuel station ID not available.');
             return;
         }
         const amount = parseFloat(orderAmount);
@@ -52,19 +53,19 @@ const OrderPage: React.FC = () => {
         }
 
         try {
-            const response = await axios.post('http://localhost:8080/api/orders', {
+            const response = await axios.post('http://localhost:8082/api/orders', {
                 orderDate,
                 orderAmount: amount,
                 fuelType,
-            });
+                fuelStationId,
+            }, { headers: FuelStationService.getAuthHeaders() });
             setSuccess('Order created successfully!');
             setOrders([...orders, response.data]);
-            // Reset form
             setOrderDate('');
             setOrderAmount('');
             setFuelType(fuelTypes[0]);
         } catch (err: any) {
-            setError(err.response?.data?.message || 'Failed to create order. Please try again.');
+            setError(err.response?.data?.message || 'Failed to create order.');
         }
     };
 
@@ -72,12 +73,12 @@ const OrderPage: React.FC = () => {
         if (!window.confirm('Are you sure you want to delete this order?')) return;
 
         try {
-            await axios.delete(`http://localhost:8080/api/orders/${orderId}`);
+            await axios.delete(`http://localhost:8082/api/orders/${orderId}`, { headers: FuelStationService.getAuthHeaders() });
             setOrders(orders.filter((order) => order.orderId !== orderId));
             setSuccess('Order deleted successfully!');
             setError('');
         } catch (err) {
-            setError('Failed to delete order. Please try again.');
+            setError('Failed to delete order.');
         }
     };
 
@@ -90,8 +91,6 @@ const OrderPage: React.FC = () => {
                         <h1 className="text-2xl font-bold text-gray-900">Fuel Order Management</h1>
                         <p className="text-gray-600 mt-1">Create and manage fuel orders efficiently</p>
                     </div>
-
-                    {/* Create Order Form */}
                     <div className="bg-gradient-to-br from-green-600 to-white text-gray-900 rounded-lg shadow-lg p-6">
                         <h2 className="text-lg font-semibold mb-4">Create New Order</h2>
                         {error && (
@@ -154,8 +153,6 @@ const OrderPage: React.FC = () => {
                             </button>
                         </form>
                     </div>
-
-                    {/* Orders Table */}
                     <div className="bg-white rounded-lg shadow-lg">
                         <div className="p-6">
                             <h2 className="text-lg font-semibold text-gray-900">Current Orders</h2>
@@ -177,7 +174,7 @@ const OrderPage: React.FC = () => {
                                     </thead>
                                     <tbody>
                                     {orders.map((order) => (
-                                        <tr key={order.orderId} className="border-t text-gray-700 hover:bg-gray-50 transition duration-150">
+                                        <tr key={order.orderId} className="border-t text-gray-700 hover:bg-gray-50">
                                             <td className="p-3">{order.orderId}</td>
                                             <td className="p-3">{order.orderDate}</td>
                                             <td className="p-3 font-medium">{order.orderAmount}</td>
@@ -185,7 +182,7 @@ const OrderPage: React.FC = () => {
                                             <td className="p-3">
                                                 <button
                                                     onClick={() => handleDeleteOrder(order.orderId)}
-                                                    className="bg-red-500 text-white font-medium py-1 px-3 rounded-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 transition duration-200"
+                                                    className="bg-red-500 text-white font-medium py-1 px-3 rounded-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500"
                                                 >
                                                     Delete
                                                 </button>
