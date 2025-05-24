@@ -6,6 +6,7 @@ interface FuelStationForm {
     location: string;
     ownerName: string;
     contactNumber: string;
+    password?: string; // Optional for registration, required for login
 }
 
 const OwnerRegistration: React.FC = () => {
@@ -14,6 +15,7 @@ const OwnerRegistration: React.FC = () => {
         location: '',
         ownerName: '',
         contactNumber: '',
+        password: '', // Optional for registration, required for login
     });
     const [errors, setErrors] = useState<Partial<FuelStationForm>>({});
     const [submissionError, setSubmissionError] = useState<string | null>(null);
@@ -68,10 +70,11 @@ const OwnerRegistration: React.FC = () => {
         try {
             await FuelStationService.registerFuelStation({
                 ...formData,
+                password: formData.password || '', // Ensure password is always a string
                 active: false,
             });
             setSuccessMessage('Fuel station registered successfully! Awaiting approval.');
-            setFormData({ name: '', location: '', ownerName: '', contactNumber: '' });
+            setFormData({ name: '', location: '', ownerName: '', contactNumber: '', password: '' });
         } catch (error: any) {
             if (error.response?.status === 400) {
                 setSubmissionError(error.response.data || 'Invalid input data');
@@ -159,6 +162,21 @@ const OwnerRegistration: React.FC = () => {
                     />
                     {errors.contactNumber && <p className="mt-1 text-sm text-red-600">{errors.contactNumber}</p>}
                 </div>
+                <div>
+                    <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+                        Password
+                    </label>
+                    <input
+                        type="password"
+                        id="password"
+                        name="password"
+                        value={formData.password}
+                        onChange={handleChange}
+                        className="mt-1 block w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                        placeholder="Optional for registration, required for login"
+                    />
+                    {errors.password && <p className="mt-1 text-sm text-red-600">{errors.password}</p>}
+                </div>
                 <button
                     type="button"
                     onClick={handleSubmit}
@@ -172,7 +190,7 @@ const OwnerRegistration: React.FC = () => {
             </div>
             <p className="mt-4 text-center text-sm text-gray-600">
                 Already have an account?{' '}
-                <a href="/fuel-station-owner/login" className="text-blue-600 hover:underline">
+                <a href="/login" className="text-blue-600 hover:underline">
                     Login here
                 </a>
             </p>
