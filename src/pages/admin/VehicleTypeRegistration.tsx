@@ -5,8 +5,8 @@ import Button from '../../components/ui/Button';
 import Input from '../../components/ui/Input';
 import Alert from '../../components/ui/Alert';
 import { adminApi } from '../../services/api';
+import Swal from 'sweetalert2';
 
-// Define the vehicle type interface based on the Java model
 interface VehicleTypeForm {
   name: string;
   description: string;
@@ -53,7 +53,21 @@ const VehicleTypeRegistration: React.FC = () => {
     }
     
     setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+    
+    // Show validation error with SweetAlert if there are errors
+    if (Object.keys(newErrors).length > 0) {
+      const errorMessages = Object.values(newErrors).join('\n');
+      Swal.fire({
+        icon: 'warning',
+        title: 'Validation Error',
+        text: errorMessages,
+        confirmButtonColor: '#f59e0b',
+        confirmButtonText: 'Fix Issues'
+      });
+      return false;
+    }
+    
+    return true;
   };
   
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
@@ -63,6 +77,15 @@ const VehicleTypeRegistration: React.FC = () => {
       ...prev,
       [name]: name === 'weeklyQuota' ? parseFloat(value) || 0 : value
     }));
+    
+    // Clear specific field error when user starts typing
+    if (errors[name]) {
+      setErrors(prev => {
+        const newErrors = { ...prev };
+        delete newErrors[name];
+        return newErrors;
+      });
+    }
   };
   
   const handleSubmit = async (e: React.FormEvent) => {
@@ -74,7 +97,42 @@ const VehicleTypeRegistration: React.FC = () => {
     
     if (!validateForm()) return;
     
+    // Show confirmation dialog before submitting
+    const result = await Swal.fire({
+      title: 'Confirm Registration',
+      html: `
+        <div style="text-align: left; margin: 20px 0;">
+          <p><strong>Vehicle Type:</strong> ${formData.name}</p>
+          <p><strong>Fuel Type:</strong> ${formData.fuelType}</p>
+          <p><strong>Weekly Quota:</strong> ${formData.weeklyQuota} Liters</p>
+          ${formData.description ? `<p><strong>Description:</strong> ${formData.description}</p>` : ''}
+        </div>
+        <p style="margin-top: 15px;">Are you sure you want to register this vehicle type?</p>
+      `,
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonColor: '#3085d6',
+      cancelButtonColor: '#6b7280',
+      confirmButtonText: 'Yes, Register',
+      cancelButtonText: 'Cancel',
+      reverseButtons: true
+    });
+
+    if (!result.isConfirmed) return;
+    
     setIsSubmitting(true);
+    
+    // Show loading alert
+    Swal.fire({
+      title: 'Registering Vehicle Type...',
+      text: 'Please wait while we process your request.',
+      allowOutsideClick: false,
+      allowEscapeKey: false,
+      showConfirmButton: false,
+      didOpen: () => {
+        Swal.showLoading();
+      }
+    });
     
     try {
       const now = new Date().toISOString();
@@ -84,6 +142,35 @@ const VehicleTypeRegistration: React.FC = () => {
         updatedAt: now
       });
       console.log('Vehicle type created:', response);
+
+      Swal.close();
+
+      Swal.fire({
+        icon: 'success',
+        title: 'Registration Successful!',
+        html: `
+          <div style="text-align: left; margin: 20px 0;">
+            <p><strong>Vehicle Type:</strong> ${formData.name}</p>
+            <p><strong>Fuel Type:</strong> ${formData.fuelType}</p>
+            <p><strong>Weekly Quota:</strong> ${formData.weeklyQuota} Liters</p>
+            <p><strong>Status:</strong> <span style="color: #10b981;">Active</span></p>
+          </div>
+          <p style="margin-top: 15px; color: #6b7280;">The vehicle type has been successfully registered in the system.</p>
+        `,
+        confirmButtonColor: '#10b981',
+        confirmButtonText: 'Great!',
+        timer: 6000,
+        timerProgressBar: true,
+        showClass: {
+          popup: 'animate__animated animate__fadeInDown'
+        },
+        hideClass: {
+          popup: 'animate__animated animate__fadeOutUp'
+        }
+      }).then(() => {
+        // Additional success actions can go here
+        console.log('Success alert closed');
+      });
       
       setSuccessMessage('Vehicle type successfully registered!');
       
@@ -97,13 +184,66 @@ const VehicleTypeRegistration: React.FC = () => {
       
     } catch (error) {
       console.error('Failed to register vehicle type:', error);
-      setErrorMessage(
-        error instanceof Error 
-          ? error.message 
-          : 'Failed to register vehicle type. Please try again.'
-      );
+      
+      // Close loading alert if it's open
+      Swal.close();
+      
+      const errorMsg = error instanceof Error ? error.message : 'Failed to register vehicle type. Please try again.';
+      
+      // Show error alert
+      Swal.fire({
+        icon: 'error',
+        title: 'Registration Failed',
+        text: errorMsg,
+        confirmButtonColor: '#ef4444',
+        confirmButtonText: 'Try Again',
+        footer: '<small>Please check your connection and try again.</small>',
+        showClass: {
+          popup: 'animate__animated animate__shakeX'
+        }
+      });
+      
+      setErrorMessage(errorMsg);
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  // Handle form reset with confirmation
+  const handleReset = () => {
+    const hasData = formData.name || formData.description || formData.weeklyQuota > 0;
+    
+    if (hasData) {
+      Swal.fire({
+        title: 'Reset Form?',
+        text: 'This will clear all entered data. Are you sure?',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#ef4444',
+        cancelButtonColor: '#6b7280',
+        confirmButtonText: 'Yes, Reset',
+        cancelButtonText: 'Keep Data'
+      }).then((result) => {
+        if (result.isConfirmed) {
+          setFormData({
+            name: '',
+            description: '',
+            weeklyQuota: 0,
+            fuelType: 'PETROL'
+          });
+          setErrors({});
+          setSuccessMessage(null);
+          setErrorMessage(null);
+          
+          Swal.fire({
+            icon: 'success',
+            title: 'Form Reset',
+            text: 'All fields have been cleared.',
+            timer: 2000,
+            showConfirmButton: false
+          });
+        }
+      });
     }
   };
   
@@ -207,14 +347,24 @@ const VehicleTypeRegistration: React.FC = () => {
             </div>
           </div>
           
-          <div className="flex justify-end">
+          <div className="flex justify-between">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={handleReset}
+              disabled={isSubmitting}
+            >
+              Reset Form
+            </Button>
+            
             <Button
               type="submit"
               variant="primary"
               icon={<Save size={18} />}
               isLoading={isSubmitting}
+              disabled={isSubmitting}
             >
-              Register Vehicle Type
+              {isSubmitting ? 'Registering...' : 'Register Vehicle Type'}
             </Button>
           </div>
         </form>

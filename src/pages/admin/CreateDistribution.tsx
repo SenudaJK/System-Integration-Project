@@ -3,6 +3,7 @@ import { Plus } from 'lucide-react';
 import Button from '../../components/ui/Button';
 import Modal from '../../components/ui/Modal';
 import { distributionApi, adminApi, FuelDistribution } from '../../services/api';
+import Swal from 'sweetalert2';
 
 interface CreateDistributionProps {
   onDistributionCreated: (newDistribution: FuelDistribution) => void;
@@ -46,16 +47,21 @@ const CreateDistribution: React.FC<CreateDistributionProps> = ({ onDistributionC
       const stations = await adminApi.getFuelStations();
       console.log('Raw API response:', stations);
 
-      // Ensure stations is an array before filtering
       const stationArray: FuelStation[] = Array.isArray(stations) ? stations : [];
-      
-      // Filter only active stations
       const activeStations = stationArray.filter((station: FuelStation) => station.active === true);
       console.log('Active stations:', activeStations);
       
       setFuelStations(activeStations);
     } catch (err) {
       console.error('Failed to fetch fuel stations:', err);
+
+      Swal.fire({
+        icon: 'error',
+        title: 'Failed to Load Stations',
+        text: 'Unable to fetch fuel stations. Please try again.',
+        confirmButtonColor: '#3085d6'
+      });
+      
       setError('Failed to load fuel stations. Please try again.');
     } finally {
       setLoadingStations(false);
@@ -71,6 +77,13 @@ const CreateDistribution: React.FC<CreateDistributionProps> = ({ onDistributionC
       if (!createForm.fuelStationId || !createForm.fuelAmount) {
         setError('Please fill in all required fields');
         setIsSubmitting(false);
+        Swal.fire({
+          icon: 'warning',
+          title: 'Missing Information',
+          text: 'Please fill in all required fields.',
+          confirmButtonColor: '#f59e0b'
+        });
+        
         return;
       }
 
@@ -78,8 +91,25 @@ const CreateDistribution: React.FC<CreateDistributionProps> = ({ onDistributionC
       if (fuelAmount <= 0) {
         setError('Fuel amount must be greater than 0');
         setIsSubmitting(false);
+        Swal.fire({
+          icon: 'warning',
+          title: 'Invalid Amount',
+          text: 'Fuel amount must be greater than 0.',
+          confirmButtonColor: '#f59e0b'
+        });
+        
         return;
       }
+      Swal.fire({
+        title: 'Creating Distribution...',
+        text: 'Please wait while we process your request.',
+        allowOutsideClick: false,
+        allowEscapeKey: false,
+        showConfirmButton: false,
+        didOpen: () => {
+          Swal.showLoading();
+        }
+      });
 
       const newDistribution = await distributionApi.createDistribution({
         fuelStationId: parseInt(createForm.fuelStationId),
@@ -88,13 +118,47 @@ const CreateDistribution: React.FC<CreateDistributionProps> = ({ onDistributionC
         notes: createForm.notes || undefined
       });
       
+      Swal.close();
+
+      const selectedStation = fuelStations.find(station => station.id === parseInt(createForm.fuelStationId));
+      const stationName = selectedStation ? selectedStation.name : 'Selected Station';
+
+      Swal.fire({
+        icon: 'success',
+        title: 'Distribution Created Successfully!',
+        html: `
+          <div style="text-align: left; margin: 20px 0;">
+            <p><strong>Reference:</strong> ${newDistribution.distributionReference || 'Generated'}</p>
+            <p><strong>Station:</strong> ${stationName}</p>
+            <p><strong>Fuel Type:</strong> ${createForm.fuelType}</p>
+            <p><strong>Amount:</strong> ${fuelAmount.toLocaleString()} Liters</p>
+            ${createForm.notes ? `<p><strong>Notes:</strong> ${createForm.notes}</p>` : ''}
+          </div>
+        `,
+        confirmButtonColor: '#10b981',
+        confirmButtonText: 'Great!',
+        timer: 5000,
+        timerProgressBar: true
+      });
+      
       onDistributionCreated(newDistribution);
       setShowCreateModal(false);
       resetForm();
-      alert('Distribution created successfully!');
+      
     } catch (err: any) {
+      Swal.close();
+      
       setError(err.message || 'Failed to create distribution. Please try again.');
       console.error(err);
+
+      Swal.fire({
+        icon: 'error',
+        title: 'Creation Failed',
+        text: err.message || 'Failed to create distribution. Please try again.',
+        confirmButtonColor: '#ef4444',
+        footer: '<small>Please check your connection and try again.</small>'
+      });
+      
     } finally {
       setIsSubmitting(false);
     }
@@ -115,6 +179,32 @@ const CreateDistribution: React.FC<CreateDistributionProps> = ({ onDistributionC
     return selectedStation ? `${selectedStation.name} - ${selectedStation.location}` : '';
   };
 
+  // Confirmation before closing modal if form has data
+  const handleModalClose = () => {
+    const hasData = createForm.fuelStationId || createForm.fuelAmount || createForm.notes;
+    
+    if (hasData && !isSubmitting) {
+      Swal.fire({
+        title: 'Discard Changes?',
+        text: 'You have unsaved changes. Are you sure you want to close?',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#ef4444',
+        cancelButtonColor: '#6b7280',
+        confirmButtonText: 'Yes, discard',
+        cancelButtonText: 'Keep editing'
+      }).then((result) => {
+        if (result.isConfirmed) {
+          setShowCreateModal(false);
+          resetForm();
+        }
+      });
+    } else {
+      setShowCreateModal(false);
+      resetForm();
+    }
+  };
+
   return (
     <>
       <Button
@@ -130,10 +220,7 @@ const CreateDistribution: React.FC<CreateDistributionProps> = ({ onDistributionC
 
       <Modal
         isOpen={showCreateModal}
-        onClose={() => {
-          setShowCreateModal(false);
-          resetForm();
-        }}
+        onClose={handleModalClose} // Updated to use confirmation
         title="Create New Distribution"
         size="md"
       >
@@ -240,10 +327,7 @@ const CreateDistribution: React.FC<CreateDistributionProps> = ({ onDistributionC
             <Button
               type="button"
               variant="outline"
-              onClick={() => {
-                setShowCreateModal(false);
-                resetForm();
-              }}
+              onClick={handleModalClose} // Updated to use confirmation
               disabled={isSubmitting}
             >
               Cancel
