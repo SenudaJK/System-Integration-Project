@@ -1,89 +1,80 @@
-import axios from "axios";
-
-const BASE_URL = "http://192.168.1.100:8080/api";
+const API_BASE_URL = 'https://2a9e-192-248-24-50.ngrok-free.app/api';
 
 class ApiService {
     constructor() {
-        this.api = axios.create({
-            baseURL: BASE_URL,
-            timeout: 10000,
-            headers: {
-                "Content-Type": "application/json",
-            },
-        });
-
-        // Request interceptor
-        this.api.interceptors.request.use(
-            (config) => {
-                console.log(
-                    `Making ${config.method?.toUpperCase()} request to: ${
-                        config.url
-                    }`
-                );
-                return config;
-            },
-            (error) => {
-                return Promise.reject(error);
-            }
-        );
-
-        // Response interceptor
-        this.api.interceptors.response.use(
-            (response) => {
-                return response;
-            },
-            (error) => {
-                console.error(
-                    "API Error:",
-                    error.response?.data || error.message
-                );
-                return Promise.reject(error);
-            }
-        );
+        this.baseURL = API_BASE_URL;
     }
 
-    setAuthToken(token) {
-        if (token) {
-            this.api.defaults.headers.common[
-                "Authorization"
-            ] = `Bearer ${token}`;
-        } else {
-            delete this.api.defaults.headers.common["Authorization"];
+    async makeRequest(endpoint, options = {}) {
+        const url = `${this.baseURL}${endpoint}`;
+        const config = {
+            headers: {
+                'Content-Type': 'application/json',
+                ...options.headers,
+            },
+            ...options,
+        };
+
+        try {
+            console.log(`Making request to: ${url}`);
+            console.log('Request config:', config);
+
+            const response = await fetch(url, config);
+
+            console.log(`Response status: ${response.status}`);
+
+            if (!response.ok) {
+                const errorText = await response.text();
+                throw new Error(`HTTP ${response.status}: ${errorText}`);
+            }
+
+            const data = await response.json();
+            console.log('Response data:', data);
+            return data;
+        } catch (error) {
+            console.error('API request failed:', error);
+            throw error;
         }
     }
 
-    // Auth endpoints
-    async login(credentials) {
-        return this.api.post("/auth/login", credentials);
+    // Scan QR Code API
+    async scanQRCode(qrCode) {
+        return this.makeRequest('/scan', {
+            method: 'POST',
+            body: JSON.stringify({ qrCode }),
+        });
     }
 
-    async register(userData) {
-        return this.api.post("/auth/register", userData);
+    // Dispense Fuel API
+    async dispenseFuel(qrCode, amount) {
+        console.log("=== DISPENSE REQUEST DEBUG ===");
+        console.log("qrCode parameter:", qrCode);
+        console.log("qrCode type:", typeof qrCode);
+        console.log("qrCode length:", qrCode ? qrCode.length : 'null');
+        console.log("amount parameter:", amount);
+        console.log("amount type:", typeof amount);
+
+        const requestBody = {
+            qrCode: qrCode,
+            amount: parseFloat(amount)
+        };
+
+        console.log("Request body:", JSON.stringify(requestBody, null, 2));
+        console.log("=== END DEBUG ===");
+
+        return this.makeRequest('/vehicles/dispense', {
+            method: 'PUT',
+            body: JSON.stringify(requestBody),
+        });
     }
 
-    // Vehicle/QR endpoints
-    async getVehicleByQR(qrData) {
-        return this.api.get(`/vehicles/qr/${encodeURIComponent(qrData)}`);
-    }
 
-    async getVehicleQuota(vehicleId) {
-        return this.api.get(`/vehicles/${vehicleId}/quota`);
-    }
-
-    // Fuel transaction endpoints
+    // Record fuel transaction (if you have this endpoint)
     async recordFuelTransaction(transactionData) {
-        return this.api.post("/fuel-transactions", transactionData);
-    }
-
-    async getTransactionHistory(operatorId, page = 0, size = 20) {
-        return this.api.get(
-            `/fuel-transactions/operator/${operatorId}?page=${page}&size=${size}`
-        );
-    }
-
-    // Fuel station endpoints
-    async getFuelStationInfo(stationId) {
-        return this.api.get(`/fuel-stations/${stationId}`);
+        return this.makeRequest('/transactions', {
+            method: 'POST',
+            body: JSON.stringify(transactionData),
+        });
     }
 }
 

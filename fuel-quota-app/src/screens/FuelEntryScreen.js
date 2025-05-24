@@ -21,7 +21,6 @@ import Animated, {
 import { apiService } from "../services/apiService";
 import { useLoading } from "../contexts/Loadingcontext";
 import { useAuth } from "../contexts/Authcontext";
-import QuotaCard from "../components/QuotaCard";
 
 export default function FuelEntryScreen({ route, navigation }) {
     const { vehicleData, qrData } = route.params;
@@ -55,8 +54,8 @@ export default function FuelEntryScreen({ route, navigation }) {
             newErrors.fuelAmount = "Fuel amount is required";
         } else if (isNaN(amount) || amount <= 0) {
             newErrors.fuelAmount = "Please enter a valid fuel amount";
-        } else if (amount > vehicleData.quota.availableQuota) {
-            newErrors.fuelAmount = `Amount exceeds available quota (${vehicleData.quota.availableQuota}L)`;
+        } else if (amount > vehicleData.weeklyAvailableQuantity) {
+            newErrors.fuelAmount = `Amount exceeds available quota (${vehicleData.weeklyAvailableQuantity}L)`;
         }
 
         setErrors(newErrors);
@@ -68,7 +67,7 @@ export default function FuelEntryScreen({ route, navigation }) {
 
         Alert.alert(
             "Confirm Fuel Dispense",
-            `Dispense ${fuelAmount}L of ${vehicleData.fuelType} to vehicle ${vehicleData.vehicleNumber}?`,
+            `Dispense ${fuelAmount}L of ${vehicleData.fuelType} to vehicle ${vehicleData.vehicleNumber}?\n\nOwner: ${vehicleData.owner.firstName} ${vehicleData.owner.lastName}`,
             [
                 { text: "Cancel", style: "cancel" },
                 { text: "Confirm", onPress: processFuelDispense },
@@ -80,26 +79,14 @@ export default function FuelEntryScreen({ route, navigation }) {
         showLoading("Processing fuel transaction...");
 
         try {
-            const transactionData = {
-                vehicleId: vehicleData.id,
-                operatorId: user.id,
-                stationId: user.stationId,
-                fuelType: vehicleData.fuelType,
-                amount: parseFloat(fuelAmount),
-                notes: notes.trim(),
-                qrData: qrData,
-                timestamp: new Date().toISOString(),
-            };
-
-            const response = await apiService.recordFuelTransaction(
-                transactionData
-            );
-
+            // Call the dispense API
+            const response = await apiService.dispenseFuel(qrData, parseFloat(fuelAmount));
+            
             hideLoading();
 
             Alert.alert(
                 "Transaction Successful",
-                `${fuelAmount}L of ${vehicleData.fuelType} dispensed successfully. SMS notification sent to vehicle owner.`,
+                `${fuelAmount}L of ${vehicleData.fuelType} dispensed successfully.\n\nRemaining quota: ${response.weeklyAvailableQuantity}L\n\nSMS notification sent to vehicle owner.`,
                 [
                     {
                         text: "OK",
@@ -109,17 +96,26 @@ export default function FuelEntryScreen({ route, navigation }) {
             );
         } catch (error) {
             hideLoading();
+            console.error("Dispense error:", error);
+            
             Alert.alert(
                 "Transaction Failed",
-                error.response?.data?.message ||
-                "Failed to process fuel transaction. Please try again."
+                error.message || "Failed to process fuel transaction. Please try again.",
+                [
+                    { text: "Try Again" },
+                    { text: "Go Back", onPress: () => navigation.goBack() }
+                ]
             );
         }
     };
 
     const getRemainingQuota = () => {
         const dispensed = parseFloat(fuelAmount) || 0;
-        return Math.max(0, vehicleData.quota.availableQuota - dispensed);
+        return Math.max(0, vehicleData.weeklyAvailableQuantity - dispensed);
+    };
+
+    const getUsedQuota = () => {
+        return vehicleData.weeklyQuota - vehicleData.weeklyAvailableQuantity;
     };
 
     return (
@@ -131,10 +127,18 @@ export default function FuelEntryScreen({ route, navigation }) {
                 colors={["#1B5E20", "#2E7D32"]}
                 style={styles.header}
             >
-                <Text style={styles.headerTitle}>Fuel Dispense</Text>
-                <Text style={styles.headerSubtitle}>
-                    Enter fuel amount to dispense
-                </Text>
+                <TouchableOpacity
+                    style={styles.backButton}
+                    onPress={() => navigation.goBack()}
+                >
+                    <Ionicons name="arrow-back" size={24} color="#fff" />
+                </TouchableOpacity>
+                <View style={styles.headerContent}>
+                    <Text style={styles.headerTitle}>Fuel Dispense</Text>
+                    <Text style={styles.headerSubtitle}>
+                        Enter fuel amount to dispense
+                    </Text>
+                </View>
             </LinearGradient>
 
             <ScrollView
@@ -151,13 +155,12 @@ export default function FuelEntryScreen({ route, navigation }) {
                                     {vehicleData.vehicleNumber}
                                 </Text>
                                 <Text style={styles.vehicleType}>
-                                    {vehicleData.vehicleType}
+                                    {vehicleData.vehicleTypeName} • {vehicleData.fuelType}
                                 </Text>
                             </View>
                             <View style={styles.ownerInfo}>
                                 <Text style={styles.ownerName}>
-                                    {vehicleData.owner.firstName}{" "}
-                                    {vehicleData.owner.lastName}
+                                    {vehicleData.owner.firstName} {vehicleData.owner.lastName}
                                 </Text>
                                 <Text style={styles.ownerNic}>
                                     {vehicleData.owner.nic}
@@ -167,12 +170,25 @@ export default function FuelEntryScreen({ route, navigation }) {
                     </View>
 
                     {/* Quota Information */}
-                    <QuotaCard
-                        fuelType={vehicleData.fuelType}
-                        totalQuota={vehicleData.quota.totalQuota}
-                        usedQuota={vehicleData.quota.usedQuota}
-                        availableQuota={vehicleData.quota.availableQuota}
-                    />
+                    <View style={styles.quotaCard}>
+                        <Text style={styles.quotaTitle}>Fuel Quota Information</Text>
+                        <View style={styles.quotaRow}>
+                            <Text style={styles.quotaLabel}>Weekly Quota:</Text>
+                            <Text style={styles.quotaValue}>{vehicleData.weeklyQuota}L</Text>
+                        </View>
+                        <View style={styles.quotaRow}>
+                            <Text style={styles.quotaLabel}>Available:</Text>
+                            <Text style={[styles.quotaValue, styles.availableQuota]}>
+                                {vehicleData.weeklyAvailableQuantity}L
+                            </Text>
+                        </View>
+                        <View style={styles.quotaRow}>
+                            <Text style={styles.quotaLabel}>Used:</Text>
+                            <Text style={styles.quotaValue}>
+                                {getUsedQuota().toFixed(1)}L
+                            </Text>
+                        </View>
+                    </View>
 
                     {/* Fuel Entry Form */}
                     <View style={styles.formCard}>
@@ -183,7 +199,7 @@ export default function FuelEntryScreen({ route, navigation }) {
                         {/* Fuel Amount Input */}
                         <View style={styles.inputGroup}>
                             <Text style={styles.inputLabel}>
-                                Fuel Amount (Liters)
+                                Fuel Amount (Liters) *
                             </Text>
                             <View
                                 style={[
@@ -201,7 +217,12 @@ export default function FuelEntryScreen({ route, navigation }) {
                                     style={styles.input}
                                     placeholder="Enter fuel amount"
                                     value={fuelAmount}
-                                    onChangeText={setFuelAmount}
+                                    onChangeText={(text) => {
+                                        setFuelAmount(text);
+                                        if (errors.fuelAmount) {
+                                            setErrors({});
+                                        }
+                                    }}
                                     keyboardType="numeric"
                                     maxLength={6}
                                 />
@@ -222,7 +243,7 @@ export default function FuelEntryScreen({ route, navigation }) {
                             <Text
                                 style={[
                                     styles.quotaDisplayValue,
-                                    getRemainingQuota() < 10 &&
+                                    getRemainingQuota() < 5 &&
                                     styles.quotaDisplayWarning,
                                 ]}
                             >
@@ -297,10 +318,10 @@ export default function FuelEntryScreen({ route, navigation }) {
                             </Text>
                         </View>
                         <Text style={styles.safetyText}>
-                            • Ensure vehicle engine is turned off{"\n"}• No
-                            smoking or open flames{"\n"}• Check fuel cap is
-                            properly secured{"\n"}• Verify fuel type matches
-                            vehicle requirement
+                            • Ensure vehicle engine is turned off{"\n"}
+                            • No smoking or open flames{"\n"}
+                            • Check fuel cap is properly secured{"\n"}
+                            • Verify fuel type matches vehicle requirement
                         </Text>
                     </View>
                 </Animated.View>
@@ -315,11 +336,20 @@ const styles = StyleSheet.create({
         backgroundColor: "#f5f5f5",
     },
     header: {
-        paddingTop: 20,
+        paddingTop: 50,
         paddingBottom: 30,
         paddingHorizontal: 20,
         borderBottomLeftRadius: 25,
         borderBottomRightRadius: 25,
+        flexDirection: "row",
+        alignItems: "center",
+    },
+    backButton: {
+        padding: 8,
+        marginRight: 15,
+    },
+    headerContent: {
+        flex: 1,
     },
     headerTitle: {
         fontSize: 24,
@@ -376,6 +406,41 @@ const styles = StyleSheet.create({
         fontSize: 12,
         color: "#666",
         marginTop: 2,
+    },
+    quotaCard: {
+        backgroundColor: "#fff",
+        borderRadius: 15,
+        padding: 20,
+        marginTop: 15,
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 5,
+        elevation: 3,
+    },
+    quotaTitle: {
+        fontSize: 18,
+        fontWeight: "bold",
+        color: "#333",
+        marginBottom: 15,
+    },
+    quotaRow: {
+        flexDirection: "row",
+        justifyContent: "space-between",
+        alignItems: "center",
+        paddingVertical: 8,
+    },
+    quotaLabel: {
+        fontSize: 16,
+        color: "#666",
+    },
+    quotaValue: {
+        fontSize: 16,
+        fontWeight: "bold",
+        color: "#333",
+    },
+    availableQuota: {
+        color: "#4CAF50",
     },
     formCard: {
         backgroundColor: "#fff",

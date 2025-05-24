@@ -67,51 +67,23 @@ export default function QRScannerScreen({ navigation }) {
         if (scanned) return;
 
         setScanned(true);
-        showLoading("Checking vehicle quota...");
+        showLoading("Scanning QR code...");
 
         try {
-            // Validate QR code format
-            if (!data.startsWith("FUELQUOTA:")) {
-                throw new Error("Invalid QR code format");
-            }
-
-            // Extract vehicle info from QR code
-            const qrParts = data.split(":");
-            if (qrParts.length < 3) {
-                throw new Error("Invalid QR code data");
-            }
-
-            const [prefix, qrIdentifier, ownerNic] = qrParts;
-
-            // For now, use mock data since backend might not be ready
-            const mockVehicleData = {
-                id: 1,
-                vehicleNumber: "ABC-1234",
-                vehicleType: "Car",
-                fuelType: "PETROL_92",
-                owner: {
-                    id: 1,
-                    firstName: "John",
-                    lastName: "Doe",
-                    nic: ownerNic || "123456789V",
-                    phone: "+94771234567",
-                },
-                quota: {
-                    totalQuota: 60,
-                    usedQuota: 25.5,
-                    availableQuota: 34.5,
-                    weeklyLimit: 60,
-                    remainingWeeks: 3,
-                },
-            };
-
+            console.log("Scanned QR type:", type);
+            console.log("Scanned QR data:", data);
+            
+            // Send the scanned data directly to the backend
+            // The backend will validate if it's a valid QR code
+            const vehicleData = await apiService.scanQRCode(data);
+            
             hideLoading();
 
-            if (mockVehicleData && mockVehicleData.quota.availableQuota > 0) {
+            if (vehicleData && vehicleData.weeklyAvailableQuantity > 0) {
                 // Navigate to fuel entry screen with vehicle data
                 navigation.navigate("FuelEntry", {
-                    vehicleData: mockVehicleData,
-                    qrData: data,
+                    vehicleData: vehicleData,
+                    qrData: data, // Pass the actual scanned QR code
                 });
             } else {
                 Alert.alert(
@@ -122,9 +94,11 @@ export default function QRScannerScreen({ navigation }) {
             }
         } catch (error) {
             hideLoading();
+            console.error("QR scan error:", error);
+            
             Alert.alert(
-                "Invalid QR Code",
-                error.message || "Please scan a valid fuel quota QR code.",
+                "Scan Failed",
+                error.message || "Invalid QR code. Please scan a valid fuel quota QR code.",
                 [{ text: "OK", onPress: () => setScanned(false) }]
             );
         }
