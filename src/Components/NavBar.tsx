@@ -13,7 +13,7 @@ const NavBar: React.FC = () => {
             const token = localStorage.getItem('token');
             if (token) {
                 try {
-                    const response = await axios.get('http://localhost:8080/api/fuel-stations/me', {
+                    const response = await axios.get('http://localhost:8082/api/fuel-stations/me', {
                         headers: { Authorization: `Bearer ${token}` },
                     });
                     const data = response.data;
@@ -24,18 +24,10 @@ const NavBar: React.FC = () => {
                             'Error fetching user details:',
                             `Status: ${err.response.status}, Response: ${JSON.stringify(err.response.data)}`
                         );
-                        if (err.response.status === 401) {
-                            setOwnerName('Authentication Failed - Invalid Token');
-                        } else if (err.response.status === 404) {
-                            setOwnerName('User Not Found');
-                        } else if (err.response.status === 500) {
-                            setOwnerName('Server Error - Check Backend Logs');
-                        } else {
-                            setOwnerName('Error Loading User');
-                        }
+                        setOwnerName('Authentication Failed');
                     } else if (err.request) {
                         console.error('Error fetching user details: No response received', err.message);
-                        setOwnerName('Server Unreachable - Check if Backend is Running');
+                        setOwnerName('Server Unreachable');
                     } else {
                         console.error('Error fetching user details:', err.message);
                         setOwnerName('Error Loading User');
@@ -44,15 +36,14 @@ const NavBar: React.FC = () => {
             } else {
                 console.warn('No token found in localStorage');
                 setOwnerName('Not Logged In');
+                navigate('/login');
             }
         };
         fetchUserDetails();
-    }, []);
+    }, [navigate]);
 
     const handleLogout = () => {
-        // Clear authentication data (e.g., JWT token)
         localStorage.removeItem('token');
-        // Redirect to login page
         navigate('/login');
     };
 
@@ -61,52 +52,48 @@ const NavBar: React.FC = () => {
     };
 
     return (
-        <nav className="fixed left-0 top-0 h-screen bg-gradient-to-br from-blue-900 to-white text-black z-50">
+        <nav className="fixed left-0 top-0 h-screen bg-gradient-to-br from-blue-900 to-gray-800 text-white z-50 w-64">
             <div className="h-full flex flex-col justify-between">
-                {/* Logo/Brand and Menu */}
                 <div>
-                    <div className="p-4 border-b border-blue-800">
-                        <Link to="/" className="text-xl font-bold text-black">
+                    <div className="p-4 border-b border-gray-700">
+                        <Link to="/dashboard" className="text-xl font-bold text-white">
                             Fuel Quota
                         </Link>
                     </div>
-                    <div className="mt-4 space-y-2">
+                    <div className="mt-6 space-y-2">
                         <Link
                             to="/dashboard"
-                            className="flex items-center px-4 py-2 text-sm font-semibold hover:bg-blue-800 rounded-md transition duration-200 focus:ring-2 focus:ring-blue-500"
+                            className="flex items-center px-4 py-2 text-sm font-semibold hover:bg-blue-700 rounded-md transition duration-200"
                         >
-                            <Home className="h-5 w-5 mr-3 text-black" />
+                            <Home className="h-5 w-5 mr-3" />
                             Dashboard
                         </Link>
                         <Link
                             to="/orders"
-                            className="flex items-center px-4 py-2 text-sm font-semibold hover:bg-blue-800 rounded-md transition duration-200 focus:ring-2 focus:ring-blue-500"
+                            className="flex items-center px-4 py-2 text-sm font-semibold hover:bg-blue-700 rounded-md transition duration-200"
                         >
-                            <Package className="h-5 w-5 mr-3 text-black" />
-                            Order
+                            <Package className="h-5 w-5 mr-3" />
+                            Orders
                         </Link>
                         <Link
                             to="/update-status"
-                            className="flex items-center px-4 py-2 text-sm font-semibold hover:bg-blue-800 rounded-md transition duration-200 focus:ring-2 focus:ring-blue-500"
+                            className="flex items-center px-4 py-2 text-sm font-semibold hover:bg-blue-700 rounded-md transition duration-200"
                         >
-                            <Settings className="h-5 w-5 mr-3 text-black" />
+                            <Settings className="h-5 w-5 mr-3" />
                             Update Status
                         </Link>
                     </div>
                 </div>
-
-                {/* User Profile and Logout */}
-                <div className="p-4 border-t border-blue-800">
+                <div className="p-4 border-t border-gray-700">
                     <div className="flex items-center mb-4">
-                        <div>
-                            <p className="text-sm font-medium text-black">{ownerName}</p>
-                        </div>
+                        <User className="h-5 w-5 mr-2" />
+                        <p className="text-sm font-medium">{ownerName}</p>
                     </div>
                     <button
                         onClick={handleLogout}
-                        className="w-full flex items-center bg-blue-700 text-black px-4 py-2 rounded-md text-sm font-medium hover:bg-blue-600 focus:ring-2 focus:ring-blue-500 transition duration-200"
+                        className="w-full flex items-center bg-red-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-red-700 transition duration-200"
                     >
-                        <LogOut className="h-5 w-5 mr-2 text-black" />
+                        <LogOut className="h-5 w-5 mr-2" />
                         Logout
                     </button>
                 </div>
