@@ -2,18 +2,16 @@ package com.fuelquota.management.controller;
 
 import com.fuelquota.management.dto.OwnerRegistrationDto;
 import com.fuelquota.management.dto.OtpVerificationDto;
+import com.fuelquota.management.dto.VehicleRegistrationDto;
 import com.fuelquota.management.model.Owner;
 import com.fuelquota.management.model.Vehicle;
-import com.fuelquota.management.service.EmailService;
 import com.fuelquota.management.service.OwnerService;
+import com.fuelquota.management.service.VehicleService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import com.fuelquota.management.dto.VehicleRegistrationDto;
-import com.fuelquota.management.model.Vehicle;
-import com.fuelquota.management.service.VehicleService;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -24,7 +22,6 @@ import java.util.Map;
 public class OwnerRegistrationController {
 
     private final OwnerService ownerService;
-    private final EmailService emailService;
     private final VehicleService vehicleService;
 
     
