@@ -19,17 +19,15 @@ const OwnerLogin = () => {
             const response = await FuelStationService.ownerLogin(credentials);
             console.log('Login response:', response);
 
-            // @ts-expect-error
-            if (response === 'Login successful') {
-                // Store a token or identifier in localStorage (mock token for now since backend returns a message)
-                localStorage.setItem('token', 'mock-token'); // Replace with actual token if backend provides one
+            if (response.message === 'Login successful' && response.token) {
+                localStorage.setItem('token', response.token);
                 navigate('/dashboard');
             } else {
                 setError('Login failed. Please check your credentials.');
             }
         } catch (err: any) {
             console.error('Login error:', err);
-            setError(err.response?.data || 'An error occurred during login.');
+            setError(err.response?.data?.message || 'An error occurred during login.');
         }
     };
 
