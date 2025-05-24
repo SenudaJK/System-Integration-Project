@@ -4,6 +4,7 @@ import './App.css';
 import OrderPage from "./pages/OrderPage.tsx";
 import OwnerLogin from "./pages/OwnerLogin";
 import Dashboard from "./pages/Dashboard";
+import UpdateStatus from './pages/UpdateStatus';
 
 function App() {
     return (
@@ -14,6 +15,7 @@ function App() {
                 <Route path="/dashboard" element={<Dashboard />} />
                 <Route path="/register" element={<OwnerRegistration />} />
                 <Route path="/orders" element={<OrderPage />} />
+                <Route path="/update-status" element={<UpdateStatus />} />
             </Routes>
         </Router>
     );
