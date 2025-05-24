@@ -22,20 +22,19 @@ export interface Vehicle {
 
 export enum VehicleType {
   CAR = "CAR",
-  VAN = "Van",
-  MOTORCYCLE = "Motorcycle",
-  THREE_WHEELER = "Three Wheeler",
-  LORRY = "Lorry",
-  BUS = "Bus",
-  OTHER = "Other"
+  VAN = "VAN",
+  MOTORCYCLE = "MOTORCYCLE",
+  THREE_WHEELER = "THREE WHEELER",
+  LORRY = "LORRY",
+  BUS = "BUS",
+  OTHER = "OTHER"
 }
 
 export enum FuelType {
-  PETROL_92 = "Petrol 92",
-  PETROL_95 = "Petrol 95",
+  PETROL = "PETROL",
   DIESEL = "DIESEL",
-  SUPER_DIESEL = "Super Diesel",
-  KEROSENE = "Kerosene"
+  SUPER_DIESEL = "SUPER DIESEL",
+  KEROSENE = "KEROSENE"
 }
 
 // Fuel transaction related types

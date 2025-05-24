@@ -107,14 +107,50 @@ const SignupPage: React.FC = () => {
     }
   };
 
+  const handleVehicleValidation = async (values: any) => {
+    try {
+      // Call the vehicle validation API
+      const response = await axios.get('http://localhost:8080/api/vehicle/validate-vehicle-by-chassis', {
+        params: {
+          chassisNumber: values.chassisNumber,
+          vehicleNumber: values.vehicleNumber,
+          nic: values.nic,
+          fuelType: values.fuelType,
+          vehicleType: values.vehicleType,
+        },
+      });
+
+      if (response.data.message === 'Vehicle details validated successfully.') {
+        toast.success('Vehicle details validated successfully.');
+        return true; // Validation successful
+      } else {
+        toast.error('Vehicle validation failed. Please check your details.');
+        return false; // Validation failed
+      }
+    } catch (error) {
+      console.error('Vehicle validation error:', error);
+      toast.error(
+        (axios.isAxiosError(error) && error.response?.data?.error) || 'Vehicle validation failed. Please try again.'
+      );
+      return false; // Validation failed
+    }
+  };
+
   const handleRegistrationSubmit = async (values: any) => {
     try {
-      // Combine owner and vehicle details into a single payload
+      // Step 1: Validate vehicle data
+      const isValid = await handleVehicleValidation(values);
+
+      if (!isValid) {
+        return; // Stop submission if validation fails
+      }
+
+      // Step 2: Combine owner and vehicle details into a single payload
       const payload = {
         nic: values.nic,
         firstName: values.firstName,
         lastName: values.lastName,
-        email:email,
+        email: email,
         phone: values.contactNumber,
         address: values.address,
         vehicle: {
@@ -128,7 +164,7 @@ const SignupPage: React.FC = () => {
 
       console.log('Payload:', payload);
 
-      // Send the payload to the new API endpoint
+      // Step 3: Submit the registration data
       const response = await axios.post('http://localhost:8080/api/register/store-ownervehicle', payload);
 
       // Show success message and navigate to the dashboard

@@ -7,7 +7,7 @@ const LandingPage: React.FC = () => {
     <div className="min-h-screen flex flex-col bg-white">
       {/* Hero section */}
       <section className="bg-primary-700 text-white relative">
-        <div className="absolute inset-0 opacity-10 bg-[url('https://images.pexels.com/photos/2078043/pexels-photo-2078043.jpeg')] bg-cover bg-center"></div>
+        {/* <div className="absolute inset-0 opacity-10 bg-[url('https://images.pexels.com/photos/2078043/pexels-photo-2078043.jpeg')] bg-cover bg-center"></div> */}
         <div className="container-custom py-16 md:py-24 relative z-10">
           <div className="flex flex-col md:flex-row items-center">
             <div className="md:w-1/2 mb-10 md:mb-0">
@@ -36,11 +36,11 @@ const LandingPage: React.FC = () => {
               </div>
             </div>
             <div className="md:w-1/2 flex justify-center">
-              <img 
+              {/* <img 
                 src="https://images.pexels.com/photos/5699376/pexels-photo-5699376.jpeg" 
                 alt="Fuel Quota System" 
                 className="rounded-lg shadow-lg max-h-96 object-cover animate-fade-in"
-              />
+              /> */}
             </div>
           </div>
         </div>
