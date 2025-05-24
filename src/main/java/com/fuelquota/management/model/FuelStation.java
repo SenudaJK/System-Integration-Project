@@ -51,4 +51,7 @@ public class FuelStation {
 
     @OneToMany(mappedBy = "fuelStation", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Order> orders;
+
+    @OneToMany(mappedBy = "fuelStation", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<FuelInventory> fuelInventories;
 }
