@@ -117,4 +117,10 @@ public class FuelStationService {
                 fuelStation.getCreatedAt()
         );
     }
+
+    public FuelStationDTO getFuelStationByContactNumber(String contactNumber) {
+        FuelStation fuelStation = fuelStationRepository.findByContactNumber(contactNumber)
+                .orElseThrow(() -> new EntityNotFoundException("Fuel station not found with contact number: " + contactNumber));
+        return mapToDTO(fuelStation);
+    }
 }
