@@ -62,6 +62,16 @@ public class OrderService {
         dto.setOrderAmount(order.getOrderAmount());
         dto.setFuelType(order.getFuelType().toString());
         dto.setFuelStationId(order.getFuelStation() != null ? order.getFuelStation().getId() : null);
+
+        // Include owner details from FuelStation
+        if (order.getFuelStation() != null) {
+            FuelStation fuelStation = order.getFuelStation();
+            dto.setOwnerName(fuelStation.getOwnerName());
+            dto.setStationName(fuelStation.getName());
+            dto.setLocation(fuelStation.getLocation());
+            dto.setContactNumber(fuelStation.getContactNumber());
+        }
+
         return dto;
     }
 }
