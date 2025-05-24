@@ -1,12 +1,13 @@
 import axios from 'axios';
 
-axios.defaults.baseURL = 'http://localhost:8080';
+axios.defaults.baseURL = 'http://localhost:8082';
 
 interface FuelStationForm {
     name: string;
     location: string;
     ownerName: string;
     contactNumber: string;
+    password: string; // Added password field
     active: boolean;
 }
 
@@ -16,8 +17,8 @@ interface LoginCredentials {
 }
 
 interface LoginResponse {
-    token: string;
-    fuelStation?: any; // Adjust based on your backend response
+    message: string; // Adjusted based on backend response ("Login successful")
+    token?: string;  // Optional token field for future JWT implementation
 }
 
 export class FuelStationService {
@@ -26,7 +27,7 @@ export class FuelStationService {
     }
 
     static async ownerLogin(credentials: LoginCredentials): Promise<LoginResponse> {
-        const response = await axios.post('/api/auth/login', credentials);
+        const response = await axios.post('/api/fuel-stations/login', credentials);
         return response.data;
     }
 }
