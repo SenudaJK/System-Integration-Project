@@ -1,5 +1,6 @@
 package com.fuelquota.management.controller;
 
+import com.fuelquota.management.config.JwtUtil;
 import com.fuelquota.management.dto.FuelStationDTO;
 import com.fuelquota.management.service.FuelStationService;
 import jakarta.persistence.EntityNotFoundException;
@@ -12,17 +13,22 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.security.Principal;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/fuel-stations")
 public class FuelStationController {
 
     private final FuelStationService fuelStationService;
+    private final JwtUtil jwtUtil;
 
     @Autowired
-    public FuelStationController(FuelStationService fuelStationService) {
+    public FuelStationController(FuelStationService fuelStationService, JwtUtil jwtUtil) {
         this.fuelStationService = fuelStationService;
+        this.jwtUtil = jwtUtil;
     }
 
     @PostMapping
@@ -41,6 +47,13 @@ public class FuelStationController {
     public ResponseEntity<List<FuelStationDTO>> getAllFuelStations() {
         List<FuelStationDTO> fuelStations = fuelStationService.getAllFuelStations();
         return ResponseEntity.ok(fuelStations);
+    }
+
+    @GetMapping("/me")
+    public ResponseEntity<FuelStationDTO> getCurrentFuelStation(Principal principal) {
+        String contactNumber = principal.getName();
+        FuelStationDTO fuelStationDTO = fuelStationService.getFuelStationByContactNumber(contactNumber);
+        return ResponseEntity.ok(fuelStationDTO);
     }
 
     @PutMapping("/{id}")
@@ -63,15 +76,19 @@ public class FuelStationController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<String> login(@Valid @RequestBody LoginRequest loginRequest) {
+    public ResponseEntity<Map<String, String>> login(@Valid @RequestBody LoginRequest loginRequest) {
         try {
             if (fuelStationService.login(loginRequest.contactNumber(), loginRequest.password())) {
-                return ResponseEntity.ok("Login successful");
+                String token = jwtUtil.generateToken(loginRequest.contactNumber());
+                Map<String, String> response = new HashMap<>();
+                response.put("message", "Login successful");
+                response.put("token", token);
+                return ResponseEntity.ok(response);
             } else {
-                return new ResponseEntity<>("Invalid credentials", HttpStatus.UNAUTHORIZED);
+                return new ResponseEntity<>(Map.of("message", "Invalid credentials"), HttpStatus.UNAUTHORIZED);
             }
         } catch (Exception e) {
-            return new ResponseEntity<>("Login failed: " + e.getMessage(), HttpStatus.UNAUTHORIZED);
+            return new ResponseEntity<>(Map.of("message", "Login failed: " + e.getMessage()), HttpStatus.UNAUTHORIZED);
         }
     }
 
