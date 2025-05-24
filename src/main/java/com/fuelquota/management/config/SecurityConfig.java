@@ -55,10 +55,6 @@ public class SecurityConfig {
                         auth.requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                                 .requestMatchers("/api/auth/**").permitAll()
                                 .requestMatchers("/auth/**").permitAll()
-                                // Permit POST requests to /api/fuel-stations for registration
-                                .requestMatchers(HttpMethod.POST, "/api/fuel-stations").permitAll()
-                                // Permit POST requests to /api/fuel-stations/login for login
-                                .requestMatchers(HttpMethod.POST, "/api/fuel-stations/login").permitAll()
                                 .requestMatchers("/api/admin/**").hasAuthority("ROLE_ADMIN")
                                 .anyRequest().authenticated()
                 );
