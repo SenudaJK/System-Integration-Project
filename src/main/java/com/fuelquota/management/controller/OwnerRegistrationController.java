@@ -160,7 +160,9 @@ public class OwnerRegistrationController {
             errorResponse.put("error", "An unexpected error occurred.");
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
         }
-    }    @PostMapping("/store-ownervehicle")
+    }    
+    
+    @PostMapping("/store-ownervehicle")
     public ResponseEntity<?> storeOwnerAndVehicle(@Valid @RequestBody OwnerRegistrationDto ownerDto) {
         try {
             // Use the transactional method that handles both owner and vehicle registration

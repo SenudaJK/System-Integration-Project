@@ -67,7 +67,15 @@ public class VehicleService {
             // Backward compatibility: convert enum to entity
             String vehicleTypeName = vehicleDto.getVehicleTypeEnum().name();
             vehicleType = vehicleTypeRepository.findByName(vehicleTypeName)
-                    .orElseThrow(() -> new IllegalArgumentException("Vehicle type not found with name: " + vehicleTypeName));
+                    .orElseThrow(() -> new IllegalArgumentException("Vehicle type not found with name: " + vehicleTypeName));        }        // Validate and convert fuel type
+        Vehicle.FuelType fuelTypeEnum = vehicleDto.getFuelTypeEnum();
+        System.out.println("DEBUG - Fuel Type Conversion:");
+        System.out.println("  Input fuelType string: '" + vehicleDto.getFuelType() + "'");
+        System.out.println("  Converted fuelTypeEnum: " + fuelTypeEnum);
+        System.out.println("  Enum name: " + (fuelTypeEnum != null ? fuelTypeEnum.name() : "null"));
+        
+        if (fuelTypeEnum == null) {
+            throw new IllegalArgumentException("Invalid fuel type: " + vehicleDto.getFuelType() + ". Must be one of: DIESEL, ELECTRIC, KEROSENE, PETROL");
         }
 
         // Create and save vehicle
@@ -75,7 +83,7 @@ public class VehicleService {
         vehicle.setVehicleNumber(vehicleDto.getVehicleNumber());
         vehicle.setChassisNumber(vehicleDto.getChassisNumber());
         vehicle.setVehicleType(vehicleType);
-        vehicle.setFuelType(vehicleDto.getFuelType());
+        vehicle.setFuelType(fuelTypeEnum);  // Use the validated enum
         vehicle.setOwner(owner);
         
         // Set initial weekly available quantity to the vehicle type's weekly quota
