@@ -1,7 +1,8 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as SecureStore from "expo-secure-store";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { apiService } from "../services/apiService";
+import { CommonActions } from "@react-navigation/native";
 
 const AuthContext = createContext({});
 
@@ -20,6 +21,12 @@ export const AuthProvider = ({ children }) => {
     const [isAuthenticated, setIsAuthenticated] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
     const [token, setToken] = useState(null);
+    const [navigationRef, setNavigationRef] = useState(null);
+
+    // Function to set navigation reference
+    const setNavigation = (ref) => {
+        setNavigationRef(ref);
+    };
 
     useEffect(() => {
         checkAuthState();
@@ -28,13 +35,12 @@ export const AuthProvider = ({ children }) => {
     const checkAuthState = async () => {
         try {
             const storedToken = await SecureStore.getItemAsync("authToken");
-
             const storedUser = await AsyncStorage.getItem("user");
 
             if (storedToken && storedUser) {
-                setToken(storedToken)
-                setUser(JSON.parse(storedUser))
-                setIsAuthenticated(true)
+                setToken(storedToken);
+                setUser(JSON.parse(storedUser));
+                setIsAuthenticated(true);
                 apiService.setAuthToken(storedToken);
             }
         } catch (error) {
@@ -46,12 +52,10 @@ export const AuthProvider = ({ children }) => {
 
     const login = async (credentials) => {
         try {
-
             // For now, use mock login since backend might not be ready
             const mockResponse = {
                 data: {
                     token: "mock-jwt-token-12345",
-
                     user: {
                         id: 1,
                         firstName: "John",
@@ -66,9 +70,10 @@ export const AuthProvider = ({ children }) => {
 
             const { token: authToken, user: userData } = mockResponse.data;
 
-            // Store token securel
+            // Store token securely
             await SecureStore.setItemAsync("authToken", authToken);
             await AsyncStorage.setItem("user", JSON.stringify(userData));
+
             setToken(authToken);
             setUser(userData);
             setIsAuthenticated(true);
@@ -92,6 +97,16 @@ export const AuthProvider = ({ children }) => {
             setUser(null);
             setIsAuthenticated(false);
             apiService.setAuthToken(null);
+
+            // Navigate to Login screen
+            if (navigationRef) {
+                navigationRef.dispatch(
+                    CommonActions.reset({
+                        index: 0,
+                        routes: [{ name: 'Login' }],
+                    })
+                );
+            }
         } catch (error) {
             console.error("Error during logout:", error);
         }
@@ -104,6 +119,7 @@ export const AuthProvider = ({ children }) => {
         isLoading,
         login,
         logout,
+        setNavigation,
     };
 
     return (

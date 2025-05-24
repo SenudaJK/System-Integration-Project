@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { NavigationContainer } from "@react-navigation/native";
 import { createStackNavigator } from "@react-navigation/stack";
 import { SafeAreaProvider } from "react-native-safe-area-context";
@@ -12,14 +12,78 @@ import RegisterScreen from "./src/screens/RegisterScreen";
 import HomeScreen from "./src/screens/HomeScreen";
 import QRScannerScreen from "./src/screens/QRScannerScreen";
 import FuelEntryScreen from "./src/screens/FuelEntryScreen";
-import TransactionHistoryScreen from "./src/screens/TransactionHistoryScreen"; // Added missing semicolon
+import TransactionHistoryScreen from "./src/screens/TransactionHistoryScreen";
 import ProfileScreen from "./src/screens/ProfileScreen";
 
 // Import contexts
-import { AuthProvider } from "./src/contexts/Authcontext";
+import { AuthProvider, useAuth } from "./src/contexts/Authcontext";
 import { LoadingProvider } from "./src/contexts/Loadingcontext";
 
 const Stack = createStackNavigator();
+
+function AppNavigator() {
+    const navigationRef = useRef();
+    const { setNavigation, isAuthenticated } = useAuth();
+
+    useEffect(() => {
+        if (navigationRef.current) {
+            setNavigation(navigationRef.current);
+        }
+    }, [navigationRef.current]);
+
+    return (
+        <NavigationContainer ref={navigationRef}>
+            <Stack.Navigator
+                initialRouteName={isAuthenticated ? "Home" : "Login"}
+                screenOptions={{
+                    headerStyle: {
+                        backgroundColor: "#2E7D32",
+                    },
+                    headerTintColor: "#fff",
+                    headerTitleStyle: {
+                        fontWeight: "bold",
+                    },
+                }}
+            >
+                <Stack.Screen
+                    name="Login"
+                    component={LoginScreen}
+                    options={{ headerShown: false }}
+                />
+                <Stack.Screen
+                    name="Register"
+                    component={RegisterScreen}
+                    options={{ title: "Register" }}
+                />
+                <Stack.Screen
+                    name="Home"
+                    component={HomeScreen}
+                    options={{ headerShown: false }}
+                />
+                <Stack.Screen
+                    name="QRScanner"
+                    component={QRScannerScreen}
+                    options={{ title: "Scan QR Code" }}
+                />
+                <Stack.Screen
+                    name="FuelEntry"
+                    component={FuelEntryScreen}
+                    options={{ title: "Fuel Entry" }}
+                />
+                <Stack.Screen
+                    name="TransactionHistory"
+                    component={TransactionHistoryScreen}
+                    options={{ title: "Transaction History" }}
+                />
+                <Stack.Screen
+                    name="Profile"
+                    component={ProfileScreen}
+                    options={{ title: "Profile" }}
+                />
+            </Stack.Navigator>
+        </NavigationContainer>
+    );
+}
 
 export default function App() {
     const [appIsReady, setAppIsReady] = useState(false);
@@ -27,18 +91,18 @@ export default function App() {
     useEffect(() => {
         async function prepare() {
             try {
-                // Keep the splash screen visible while we fetch resources
                 await SplashScreen.preventAutoHideAsync();
 
-                // Skip font loading if you don't have font files
-                // await Font.loadAsync({
-                //   'Roboto': require('./assets/fonts/Roboto-Regular.ttf'),
-                //   'Roboto-Bold': require('./assets/fonts/Roboto-Bold.ttf'),
-                // });
+                // Pre-load fonts, make any API calls you need to do here
+                await Font.loadAsync({
+                    // Add any custom fonts here
+                });
+
+                // Artificially delay for demo purposes
+                await new Promise(resolve => setTimeout(resolve, 2000));
             } catch (e) {
                 console.warn(e);
             } finally {
-                // Tell the application to render
                 setAppIsReady(true);
             }
         }
@@ -60,56 +124,7 @@ export default function App() {
         <SafeAreaProvider>
             <LoadingProvider>
                 <AuthProvider>
-                    <NavigationContainer>
-                        <Stack.Navigator
-                            initialRouteName="Login"
-                            screenOptions={{
-                                headerStyle: {
-                                    backgroundColor: "#2E7D32",
-                                },
-                                headerTintColor: "#fff",
-                                headerTitleStyle: {
-                                    fontWeight: "bold",
-                                },
-                            }}
-                        >
-                            <Stack.Screen
-                                name="Login"
-                                component={LoginScreen}
-                                options={{ headerShown: false }}
-                            />
-                            <Stack.Screen
-                                name="Register"
-                                component={RegisterScreen}
-                                options={{ title: "Register" }}
-                            />
-                            <Stack.Screen
-                                name="Home"
-                                component={HomeScreen}
-                                options={{ headerShown: false }}
-                            />
-                            <Stack.Screen
-                                name="QRScanner"
-                                component={QRScannerScreen}
-                                options={{ title: "Scan QR Code" }}
-                            />
-                            <Stack.Screen
-                                name="FuelEntry"
-                                component={FuelEntryScreen}
-                                options={{ title: "Fuel Entry" }}
-                            />
-                            <Stack.Screen
-                                name="TransactionHistory"
-                                component={TransactionHistoryScreen}
-                                options={{ title: "Transaction History" }}
-                            />
-                            <Stack.Screen
-                                name="Profile"
-                                component={ProfileScreen}
-                                options={{ title: "Profile" }}
-                            />
-                        </Stack.Navigator>
-                    </NavigationContainer>
+                    <AppNavigator />
                     <StatusBar style="light" />
                 </AuthProvider>
             </LoadingProvider>
