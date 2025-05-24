@@ -16,28 +16,37 @@ import java.util.Random;
 public class OtpService {
 
     private final OtpRepository otpRepository;
-    private final EmailService emailService;
+    private final EmailServiceInterface emailService;
 
     @Value("${app.otp.expiration-minutes:5}")
-    private int otpExpirationMinutes;
-
-    @Transactional 
+    private int otpExpirationMinutes;    @Transactional(rollbackFor = Exception.class)
     public void generateAndSendOtp(String email, OtpRecord.OtpPurpose purpose) {
-        // Delete any existing OTP records for this email and purpose
-        otpRepository.deleteByEmailAndPurpose(email, purpose);        // Generate a random 6-digit OTP
-        String otp = generateOtp();
+        try {
+            // Delete any existing OTP records for this email and purpose
+            otpRepository.deleteByEmailAndPurpose(email, purpose);
+            
+            // Generate a random 6-digit OTP
+            String otp = generateOtp();
 
-        // Save the OTP record in the database
-        OtpRecord otpRecord = new OtpRecord();
-        otpRecord.setEmail(email);
-        otpRecord.setOtp(otp);
-        otpRecord.setPurpose(purpose);
-        otpRecord.setExpiryTime(LocalDateTime.now().plusMinutes(5)); // OTP valid for 5 minutes
-        otpRecord.setVerified(false);
-        otpRepository.save(otpRecord);
-
-        // Send the OTP via email
-        emailService.sendVerificationEmail(email, otp);
+            // Create the OTP record in memory first
+            OtpRecord otpRecord = new OtpRecord();
+            otpRecord.setEmail(email);
+            otpRecord.setOtp(otp);
+            otpRecord.setPurpose(purpose);
+            otpRecord.setExpiryTime(LocalDateTime.now().plusMinutes(otpExpirationMinutes));
+            otpRecord.setVerified(false);
+            
+            // Save the OTP record in the database
+            otpRepository.save(otpRecord);
+            
+            // Send the OTP via email SYNCHRONOUSLY (this will throw exception if fails)
+            emailService.sendVerificationEmailSync(email, otp);
+            
+        } catch (Exception e) {
+            // If email sending fails, the transaction will rollback automatically
+            // and the OTP record won't be saved
+            throw new RuntimeException("Failed to send OTP email: " + e.getMessage(), e);
+        }
     }
 
     @Transactional //verifying the otp after input

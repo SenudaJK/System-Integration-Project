@@ -160,31 +160,23 @@ public class OwnerRegistrationController {
             errorResponse.put("error", "An unexpected error occurred.");
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
         }
-    }
-
-    @PostMapping("/store-ownervehicle")
-    public ResponseEntity<?> storeOwner(@Valid @RequestBody OwnerRegistrationDto ownerDto) {
+    }    @PostMapping("/store-ownervehicle")
+    public ResponseEntity<?> storeOwnerAndVehicle(@Valid @RequestBody OwnerRegistrationDto ownerDto) {
         try {
-            // Save owner information in the database
+            // Use the transactional method that handles both owner and vehicle registration
+            Map<String, Object> result = ownerService.storeOwnerAndVehicle(ownerDto);
             
-            Owner owner = ownerService.storeOwner(ownerDto);
-
-            // Extract vehicle details from the nested vehicle object in ownerDto
-            VehicleRegistrationDto vehicleDto = ownerDto.getVehicle();
-
-            // Set the owner NIC in the vehicle DTO
-            vehicleDto.setOwnerNic(owner.getNic());
-            System.out.print(vehicleDto.getOwnerNic());
-         
-            // Save vehicle information in the database
-            Vehicle vehicle = vehicleService.registerVehicle(vehicleDto);
-            
+            Owner owner = (Owner) result.get("owner");
+            Vehicle vehicle = (Vehicle) result.get("vehicle");
+            String message = (String) result.get("message");
 
             // Prepare response
             Map<String, Object> response = new HashMap<>();
-            response.put("message", "Owner and vehicle information stored successfully.");
-            response.put("ownerId", owner.getId()); // Include ownerId in the response
+            response.put("message", message);
+            response.put("ownerId", owner.getId());
             response.put("vehicleId", vehicle.getId());
+            response.put("ownerNic", owner.getNic());
+            response.put("vehicleNumber", vehicle.getVehicleNumber());
 
             return ResponseEntity.status(HttpStatus.CREATED).body(response);
         } catch (IllegalArgumentException e) {
@@ -193,7 +185,7 @@ public class OwnerRegistrationController {
             return ResponseEntity.badRequest().body(errorResponse);
         } catch (Exception e) {
             Map<String, String> errorResponse = new HashMap<>();
-            errorResponse.put("error", "An unexpected error occurred.");
+            errorResponse.put("error", "Registration failed: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
         }
     }

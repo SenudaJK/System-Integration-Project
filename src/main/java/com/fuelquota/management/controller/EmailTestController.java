@@ -1,6 +1,6 @@
 package com.fuelquota.management.controller;
 
-import com.fuelquota.management.service.EmailService;
+import com.fuelquota.management.service.EmailServiceInterface;
 import com.fuelquota.management.service.NetworkTestService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -18,7 +18,7 @@ import java.util.Map;
 @Slf4j
 public class EmailTestController {
 
-    private final EmailService emailService;
+    private final EmailServiceInterface emailService;
     private final NetworkTestService networkTestService;
 
     /**

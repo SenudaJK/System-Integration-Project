@@ -5,6 +5,7 @@ import com.fuelquota.management.dto.VehicleValidationResponse;
 import com.fuelquota.management.model.Owner;
 import com.fuelquota.management.model.Vehicle;
 import com.fuelquota.management.model.VehicleTypeEntity;
+import com.fuelquota.management.repository.OwnerRepository;
 import com.fuelquota.management.repository.VehicleRepository;
 import com.fuelquota.management.repository.VehicleTypeRepository;
 import com.fuelquota.management.util.QRCodeGenerator;
@@ -26,8 +27,8 @@ public class VehicleService {
 
     private final VehicleRepository vehicleRepository;
     private final VehicleTypeRepository vehicleTypeRepository;
-    private final OwnerService ownerService;
-    private final RestTemplate restTemplate;    @Transactional
+    private final OwnerRepository ownerRepository;
+    private final RestTemplate restTemplate;@Transactional
     public Vehicle registerVehicle(VehicleRegistrationDto vehicleDto) {
         // Check if vehicle already exists
         if (vehicleRepository.existsByVehicleNumber(vehicleDto.getVehicleNumber())) {
@@ -46,10 +47,8 @@ public class VehicleService {
         // Validate that at least one vehicle type is provided
         if (!vehicleDto.isVehicleTypeValid()) {
             throw new IllegalArgumentException("Vehicle type is required (either vehicleTypeId, vehicleTypeEnum, or vehicleType string)");
-        }
-
-        // Get owner
-        Owner owner = ownerService.findByNic(vehicleDto.getOwnerNic())
+        }        // Get owner
+        Owner owner = ownerRepository.findByNic(vehicleDto.getOwnerNic())
                 .orElseThrow(() -> new IllegalArgumentException("Owner not found with NIC: " + vehicleDto.getOwnerNic()));
 
         // Get vehicle type entity

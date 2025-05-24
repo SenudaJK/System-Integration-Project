@@ -5,6 +5,7 @@ import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.scheduling.annotation.Async;
@@ -12,10 +13,11 @@ import org.springframework.stereotype.Service;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
 
-@Service
+@Service("emailService")
+@ConditionalOnProperty(name = "app.email.mock", havingValue = "false", matchIfMissing = true)
 @RequiredArgsConstructor
 @Slf4j
-public class EmailService {
+public class EmailService implements EmailServiceInterface {
 
     private final JavaMailSender mailSender;
     private final TemplateEngine templateEngine;
@@ -24,12 +26,18 @@ public class EmailService {
     private String fromEmail;
     
     @Value("${server.port}")
-    private String serverPort;
-
-    @Async
+    private String serverPort;    @Async
     public void sendVerificationEmail(String to, String otp) {
+        sendVerificationEmailSync(to, otp);
+    }
+    
+    /**
+     * Synchronous version of email sending for transactional operations
+     * This method will throw exceptions immediately if email sending fails
+     */
+    public void sendVerificationEmailSync(String to, String otp) {
         try {
-            log.info("Attempting to send verification email to: {}", to);
+            log.info("Attempting to send verification email synchronously to: {}", to);
             
             MimeMessage message = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
@@ -45,6 +53,7 @@ public class EmailService {
             helper.setSubject("Fuel Quota System - Email Verification");
             helper.setText(emailContent, true);
             
+            // Send email synchronously - this will throw exception if it fails
             mailSender.send(message);
             log.info("Verification email sent successfully to: {}", to);
             
