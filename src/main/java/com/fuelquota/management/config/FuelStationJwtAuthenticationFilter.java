@@ -1,6 +1,7 @@
 package com.fuelquota.management.config;
 
-
+import com.fuelquota.management.model.FuelStation;
+import com.fuelquota.management.repository.FuelStationRepository;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.MalformedJwtException;
 import io.jsonwebtoken.UnsupportedJwtException;
@@ -15,22 +16,22 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.Collections;
 
 @Component
 public class FuelStationJwtAuthenticationFilter extends OncePerRequestFilter {
     private static final Logger logger = LoggerFactory.getLogger(FuelStationJwtAuthenticationFilter.class);
 
     @Autowired
-    private JwtUtil jwtUtil; // Ensure the JwtUtil class exists or is imported
+    private JwtUtil jwtUtil;
 
     @Autowired
-    private UserDetailsService userDetailsService;
+    private FuelStationRepository fuelStationRepository;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
@@ -38,13 +39,14 @@ public class FuelStationJwtAuthenticationFilter extends OncePerRequestFilter {
         logger.debug("Processing request to '{}' with JWT: {}", request.getRequestURI(), request.getHeader("Authorization") != null ? "present" : "absent");
 
         String jwtToken = null;
-        String username = null;
+        String contactNumber = null;
         final String authorizationHeader = request.getHeader("Authorization");
 
         if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
             jwtToken = authorizationHeader.substring(7);
             try {
-                username = jwtUtil.extractUsername(jwtToken);
+                contactNumber = jwtUtil.extractUsername(jwtToken);
+                logger.debug("Extracted contact number from JWT: {}", contactNumber);
             } catch (IllegalArgumentException e) {
                 logger.error("Unable to get JWT Token", e);
             } catch (ExpiredJwtException e) {
@@ -56,16 +58,32 @@ public class FuelStationJwtAuthenticationFilter extends OncePerRequestFilter {
             logger.debug("No JWT token found in request");
         }
 
-        if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-            UserDetails userDetails = this.userDetailsService.loadUserByUsername(username);
-            if (jwtUtil.validateToken(jwtToken, userDetails.getUsername())) {
-                UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
-                        userDetails, null, userDetails.getAuthorities());
-                authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                SecurityContextHolder.getContext().setAuthentication(authToken);
-                logger.debug("JWT authentication successful for user: {}", username);
-            } else {
-                logger.warn("JWT validation failed for user: {}", username);
+        if (contactNumber != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+            try {
+                if (jwtUtil.validateToken(jwtToken, contactNumber)) {
+                    String finalContactNumber = contactNumber;
+                    FuelStation fuelStation = fuelStationRepository.findByContactNumber(contactNumber)
+                            .orElseThrow(() -> {
+                                logger.warn("Fuel station not found with contact number: {}", finalContactNumber);
+                                return new IllegalArgumentException("Fuel station not found: " + finalContactNumber);
+                            });
+                    UserDetails userDetails = new org.springframework.security.core.userdetails.User(
+                            fuelStation.getContactNumber(),
+                            fuelStation.getPassword(),
+                            fuelStation.isActive(),
+                            true, true, true,
+                            Collections.singletonList(() -> "ROLE_OWNER")
+                    );
+                    UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
+                            userDetails, null, userDetails.getAuthorities());
+                    authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                    SecurityContextHolder.getContext().setAuthentication(authToken);
+                    logger.debug("JWT authentication successful for contact number: {}", contactNumber);
+                } else {
+                    logger.warn("JWT validation failed for contact number: {}", contactNumber);
+                }
+            } catch (Exception e) {
+                logger.error("Authentication failed for contact number: {}", contactNumber, e);
             }
         }
 
