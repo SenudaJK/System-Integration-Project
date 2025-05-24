@@ -28,9 +28,7 @@ public class EmailConfig {
     private String username;
 
     @Value("${spring.mail.password}")
-    private String password;
-
-    @Bean
+    private String password;    @Bean
     public JavaMailSender getJavaMailSender() {
         JavaMailSenderImpl mailSender = new JavaMailSenderImpl();
         mailSender.setHost(host);
@@ -41,17 +39,31 @@ public class EmailConfig {
         Properties props = mailSender.getJavaMailProperties();
         props.put("mail.transport.protocol", "smtp");
         props.put("mail.smtp.auth", "true");
-        props.put("mail.smtp.starttls.enable", "true");
-        props.put("mail.smtp.starttls.required", "true");
-        props.put("mail.smtp.ssl.trust", "smtp.gmail.com");
-        props.put("mail.smtp.ssl.protocols", "TLSv1.2");
-        props.put("mail.debug", "true");
         
-        // Additional SSL configuration for certificate issues
-        props.put("mail.smtp.ssl.checkserveridentity", "true");
-        props.put("mail.smtp.ssl.enable", "false"); // Use STARTTLS instead of direct SSL
-        props.put("mail.smtp.socketFactory.class", "javax.net.ssl.SSLSocketFactory");
-        props.put("mail.smtp.socketFactory.fallback", "false");
+        // Use SSL on port 465 instead of STARTTLS
+        if (port == 465) {
+            props.put("mail.smtp.ssl.enable", "true");
+            props.put("mail.smtp.ssl.trust", "smtp.gmail.com");
+            props.put("mail.smtp.ssl.protocols", "TLSv1.2");
+            props.put("mail.smtp.socketFactory.port", String.valueOf(port));
+            props.put("mail.smtp.socketFactory.class", "javax.net.ssl.SSLSocketFactory");
+            props.put("mail.smtp.socketFactory.fallback", "false");
+        } else {
+            // STARTTLS configuration for port 587
+            props.put("mail.smtp.starttls.enable", "true");
+            props.put("mail.smtp.starttls.required", "true");
+            props.put("mail.smtp.ssl.trust", "smtp.gmail.com");
+            props.put("mail.smtp.ssl.protocols", "TLSv1.2");
+        }
+        
+        // Connection timeout settings
+        props.put("mail.smtp.connectiontimeout", "10000"); // 10 seconds
+        props.put("mail.smtp.timeout", "10000"); // 10 seconds
+        props.put("mail.smtp.writetimeout", "10000"); // 10 seconds
+        
+        // Additional settings for better compatibility
+        props.put("mail.smtp.ssl.checkserveridentity", "false");
+        props.put("mail.debug", "true");
         
         return mailSender;
     }

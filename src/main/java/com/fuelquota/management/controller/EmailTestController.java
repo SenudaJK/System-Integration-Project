@@ -1,6 +1,7 @@
 package com.fuelquota.management.controller;
 
 import com.fuelquota.management.service.EmailService;
+import com.fuelquota.management.service.NetworkTestService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -18,6 +19,33 @@ import java.util.Map;
 public class EmailTestController {
 
     private final EmailService emailService;
+    private final NetworkTestService networkTestService;
+
+    /**
+     * Test network connectivity to Gmail SMTP
+     * Usage: GET /api/test/network
+     */
+    @GetMapping("/network")
+    public ResponseEntity<?> testNetworkConnectivity() {
+        try {
+            log.info("Starting network connectivity test...");
+            
+            networkTestService.testGmailConnectivity();
+            networkTestService.checkProxySettings();
+            
+            return ResponseEntity.ok(Map.of(
+                "success", true,
+                "message", "Network connectivity test completed. Check logs for details."
+            ));
+            
+        } catch (Exception e) {
+            log.error("Network test failed: {}", e.getMessage(), e);
+            return ResponseEntity.badRequest().body(Map.of(
+                "success", false,
+                "message", "Network test failed: " + e.getMessage()
+            ));
+        }
+    }
 
     /**
      * Test endpoint to send a verification email
