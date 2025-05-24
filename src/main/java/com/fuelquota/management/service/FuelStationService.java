@@ -82,7 +82,15 @@ public class FuelStationService {
         return mapToDTO(updatedFuelStation);
     }
 
+    @Transactional(readOnly = true)
+    public boolean login(String contactNumber, String password) {
+        FuelStation fuelStation = fuelStationRepository.findByContactNumber(contactNumber)
+                .orElseThrow(() -> new EntityNotFoundException("Fuel station not found with contact number: " + contactNumber));
 
+        // Note: In a real application, use PasswordEncoder to verify the password
+        // return passwordEncoder.matches(password, fuelStation.getPassword());
+        return fuelStation.getPassword().equals(password); // For demo purposes only
+    }
 
     private FuelStation mapToEntity(FuelStationDTO dto) {
         FuelStation fuelStation = new FuelStation();
@@ -91,6 +99,7 @@ public class FuelStationService {
         fuelStation.setLocation(dto.getLocation());
         fuelStation.setOwnerName(dto.getOwnerName());
         fuelStation.setContactNumber(dto.getContactNumber());
+        fuelStation.setPassword(dto.getPassword());
         fuelStation.setActive(dto.isActive());
         fuelStation.setCreatedAt(dto.getCreatedAt());
         return fuelStation;
@@ -103,6 +112,7 @@ public class FuelStationService {
                 fuelStation.getLocation(),
                 fuelStation.getOwnerName(),
                 fuelStation.getContactNumber(),
+                fuelStation.getPassword(),
                 fuelStation.isActive(),
                 fuelStation.getCreatedAt()
         );

@@ -11,7 +11,7 @@ import java.time.LocalDateTime;
 @Entity
 @Data
 @Table(uniqueConstraints = {
-    @UniqueConstraint(name = "uk_fuel_station_contact_number", columnNames = "contactNumber")
+        @UniqueConstraint(name = "uk_fuel_station_contact_number", columnNames = "contactNumber")
 })
 public class FuelStation {
     @Id
@@ -34,9 +34,13 @@ public class FuelStation {
     @Pattern(regexp = "^[0-9]{10}$", message = "Contact number must be exactly 10 digits")
     @Column(unique = true)
     private String contactNumber;
-    
-    private boolean isActive; // Whether the station is approved/active
-    
+
+    @NotBlank(message = "Password is required")
+    @Size(min = 8, message = "Password must be at least 8 characters")
+    private String password;
+
+    private boolean isActive;
+
     private LocalDateTime createdAt;
 
     @PrePersist
