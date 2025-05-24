@@ -4,19 +4,21 @@ import Card from '../../components/ui/Card';
 import Button from '../../components/ui/Button';
 import Badge from '../../components/ui/Badge';
 import Table from '../../components/ui/Table';
-import { adminApi } from '../../services/api';
+import { adminApi, distributionApi, FuelDistribution } from '../../services/api';
 
-// Update the FuelStation type to match your API response
 interface FuelStation {
-  id: number; // Changed from string to number
+  id: number;
   name: string;
   location: string;
-  ownerName: string; // Added to match API
+  ownerName: string;
   contactNumber: string;
-  active: boolean; // Changed from status string to active boolean
+  active: boolean;
   createdAt: string;
-  // Add a computed status field for UI purposes
   status?: 'APPROVED' | 'PENDING' | 'DEACTIVATED';
+}
+
+interface Distributions {
+  distributions: FuelDistribution[];
 }
 
 interface Transaction {
@@ -31,6 +33,7 @@ interface Transaction {
 const Dashboard: React.FC = () => {
   const [stations, setStations] = useState<FuelStation[]>([]);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [distributions, setDistributions] = useState<FuelDistribution[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
   const [refreshTrigger, setRefreshTrigger] = useState(0);
@@ -40,30 +43,36 @@ const Dashboard: React.FC = () => {
       try {
         setIsLoading(true);
         setError('');
-        
-        // Fetch fuel stations from the API
+
         const stationsData = await adminApi.getFuelStations() as FuelStation[];
-        
-        // Map the active boolean to our status enum for UI purposes
+
         const processedStations = stationsData.map((station: FuelStation) => ({
           ...station,
           status: station.active ? 'APPROVED' as 'APPROVED' : 'PENDING' as 'PENDING'
         }));
-        
+
         console.log('Fetched stations:', processedStations);
-        
+
         setStations(processedStations);
-        
-        // Also fetch transactions if your API supports it
         try {
           const transactionsData = await adminApi.getTransactions() as Transaction[];
           console.log('Fetched transactions:', transactionsData);
           setTransactions(transactionsData);
         } catch (transactionError) {
           console.error('Transaction fetch error:', transactionError);
-          // Continue without transactions data
+
           setTransactions([]);
         }
+
+        try {
+          const distributionsData = await distributionApi.getRecentDistributions(100);
+          console.log('Fetched distributions:', distributionsData);
+          setDistributions(distributionsData);
+        } catch (distributionError) {
+          console.error('Distribution fetch error:', distributionError);
+          setDistributions([]);
+        }
+
       } catch (err) {
         console.error('Dashboard data fetch error:', err);
         setError('Failed to load dashboard data. Please check your connection and try again.');
@@ -75,37 +84,43 @@ const Dashboard: React.FC = () => {
     fetchDashboardData();
   }, [refreshTrigger]);
 
-  // Filter stations by status
   const pendingStations = stations.filter(station => !station.active);
   const activeStations = stations.filter(station => station.active);
 
-  // Calculate total fuel distributed
   const getTotalFuelDistributed = () => {
-    return transactions.reduce((total, transaction) => total + transaction.amount, 0);
+    // Only count DELIVERED distributions
+    const deliveredDistributions = distributions.filter(dist => dist.status === 'DELIVERED');
+
+    // Sum up the fuelAmount from all delivered distributions
+    const totalLiters = deliveredDistributions.reduce((total, distribution) => {
+      return total + (distribution.fuelAmount || 0);
+    }, 0);
+
+    return totalLiters;
   };
 
   // Get appropriate status badge for a station
   const getStationStatusBadge = (active: boolean) => {
-    return active 
-      ? <Badge variant="success">Active</Badge> 
+    return active
+      ? <Badge variant="success">Active</Badge>
       : <Badge variant="warning">Inactive</Badge>;
   };
 
   // Column definitions for fuel stations table
   const fuelStationsColumns = [
-    { 
+    {
       header: 'Name',
       accessor: (row: FuelStation) => row.name
     },
-    { 
+    {
       header: 'Location',
       accessor: (row: FuelStation) => row.location
     },
-    { 
+    {
       header: 'Owner',
       accessor: (row: FuelStation) => row.ownerName
     },
-    { 
+    {
       header: 'Contact',
       accessor: (row: FuelStation) => (
         <div className="flex items-center">
@@ -114,11 +129,11 @@ const Dashboard: React.FC = () => {
         </div>
       )
     },
-    { 
+    {
       header: 'Status',
       accessor: (row: FuelStation) => getStationStatusBadge(row.active)
     },
-    { 
+    {
       header: 'Actions',
       accessor: (row: FuelStation) => (
         <div className="flex space-x-2">
@@ -148,23 +163,23 @@ const Dashboard: React.FC = () => {
 
   // Column definitions for transactions table
   const recentTransactionsColumns = [
-    { 
+    {
       header: 'Station',
       accessor: (row: Transaction) => row.stationName
     },
-    { 
+    {
       header: 'Vehicle',
       accessor: (row: Transaction) => row.vehicleRegistration
     },
-    { 
+    {
       header: 'Fuel Type',
       accessor: (row: Transaction) => row.fuelType
     },
-    { 
+    {
       header: 'Amount (L)',
       accessor: (row: Transaction) => <span className="font-medium">{row.amount}</span>
     },
-    { 
+    {
       header: 'Date',
       accessor: (row: Transaction) => new Date(row.timestamp).toLocaleDateString()
     }
@@ -174,16 +189,16 @@ const Dashboard: React.FC = () => {
   const handleActivateStation = async (stationId: number) => {
     try {
       await adminApi.approveStation(stationId.toString());
-      
+
       // Update local state
-      setStations(prevStations => 
-        prevStations.map(station => 
-          station.id === stationId 
-            ? { ...station, active: true } 
+      setStations(prevStations =>
+        prevStations.map(station =>
+          station.id === stationId
+            ? { ...station, active: true }
             : station
         )
       );
-      
+
       // Alternatively, refresh the data completely
       setRefreshTrigger(prev => prev + 1);
     } catch (err) {
@@ -196,16 +211,16 @@ const Dashboard: React.FC = () => {
   const handleDeactivateStation = async (stationId: number) => {
     try {
       await adminApi.deactivateStation(stationId.toString());
-      
+
       // Update local state
-      setStations(prevStations => 
-        prevStations.map(station => 
-          station.id === stationId 
-            ? { ...station, active: false } 
+      setStations(prevStations =>
+        prevStations.map(station =>
+          station.id === stationId
+            ? { ...station, active: false }
             : station
         )
       );
-      
+
       // Alternatively, refresh the data completely
       setRefreshTrigger(prev => prev + 1);
     } catch (err) {
@@ -213,6 +228,7 @@ const Dashboard: React.FC = () => {
       // Add error notification here if needed
     }
   };
+
 
   // Loading state
   if (isLoading) {
@@ -232,8 +248,8 @@ const Dashboard: React.FC = () => {
           <span>{error}</span>
         </div>
         <div className="mt-4">
-          <Button 
-            variant="outline" 
+          <Button
+            variant="outline"
             onClick={() => setRefreshTrigger(prev => prev + 1)}
           >
             Retry
@@ -250,7 +266,7 @@ const Dashboard: React.FC = () => {
         <h1 className="text-2xl font-bold text-gray-900">Admin Dashboard</h1>
         <p className="text-gray-600 mt-1">Monitor and manage the fuel quota system</p>
       </div>
-      
+
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <Card className="bg-gradient-to-br from-blue-800 to-blue-700 text-white">
           <div className="flex items-center">
@@ -264,7 +280,7 @@ const Dashboard: React.FC = () => {
             </div>
           </div>
         </Card>
-        
+
         <Card className="bg-gradient-to-br from-teal-600 to-teal-500 text-white">
           <div className="flex items-center">
             <div className="p-3 rounded-full bg-white bg-opacity-20">
@@ -277,7 +293,7 @@ const Dashboard: React.FC = () => {
             </div>
           </div>
         </Card>
-        
+
         <Card className="bg-gradient-to-br from-amber-500 to-amber-400 text-white">
           <div className="flex items-center">
             <div className="p-3 rounded-full bg-white bg-opacity-20">
@@ -290,7 +306,7 @@ const Dashboard: React.FC = () => {
             </div>
           </div>
         </Card>
-        
+
         <Card className="bg-gradient-to-br from-indigo-600 to-indigo-500 text-white">
           <div className="flex items-center">
             <div className="p-3 rounded-full bg-white bg-opacity-20">
@@ -298,13 +314,13 @@ const Dashboard: React.FC = () => {
             </div>
             <div className="ml-4">
               <h3 className="text-lg font-semibold">Fuel Distributed</h3>
-              <p className="text-2xl font-bold">{getTotalFuelDistributed()} L</p>
+              <p className="text-2xl font-bold">{getTotalFuelDistributed().toLocaleString()} L</p>
               <p className="text-sm text-indigo-100">Total volume</p>
             </div>
           </div>
         </Card>
       </div>
-      
+
       <div className="space-y-6">
         <Card
           title="All Fuel Stations"
@@ -318,7 +334,7 @@ const Dashboard: React.FC = () => {
             emptyMessage="No fuel stations found"
           />
         </Card>
-        
+
         {transactions.length > 0 && (
           <Card
             title="Recent Transactions"
@@ -327,7 +343,7 @@ const Dashboard: React.FC = () => {
               <Button
                 size="sm"
                 variant="outline"
-                onClick={() => {/* View all transactions */}}
+                onClick={() => {/* View all transactions */ }}
               >
                 View All
               </Button>
