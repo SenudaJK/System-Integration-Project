@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { FuelStationService } from '../../services/FuelStationService';
+import { FuelStationService } from '../services/FuelStationService';
 
 interface FuelStationForm {
     name: string;
