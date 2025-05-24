@@ -19,6 +19,7 @@ const OwnerLogin = () => {
             const response = await FuelStationService.ownerLogin(credentials);
             console.log('Login response:', response);
 
+            // @ts-expect-error
             if (response === 'Login successful') {
                 // Store a token or identifier in localStorage (mock token for now since backend returns a message)
                 localStorage.setItem('token', 'mock-token'); // Replace with actual token if backend provides one
