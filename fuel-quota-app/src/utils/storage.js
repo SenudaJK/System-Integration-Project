@@ -1,3 +1,4 @@
+import { Platform } from "react-native";
 import * as SecureStore from "expo-secure-store";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
@@ -5,8 +6,15 @@ class StorageService {
     // Secure storage for sensitive data
     async setSecureItem(key, value) {
         try {
-            await SecureStore.setItemAsync(key, value);
-            return true;
+            if (Platform.OS === 'web') {
+                // Use localStorage for web (less secure but functional)
+                localStorage.setItem(`secure_${key}`, value);
+                return true;
+            } else {
+                // Use SecureStore for mobile
+                await SecureStore.setItemAsync(key, value);
+                return true;
+            }
         } catch (error) {
             console.error("Error setting secure item:", error);
             return false;
@@ -15,7 +23,13 @@ class StorageService {
 
     async getSecureItem(key) {
         try {
-            return await SecureStore.getItemAsync(key);
+            if (Platform.OS === 'web') {
+                // Use localStorage for web
+                return localStorage.getItem(`secure_${key}`);
+            } else {
+                // Use SecureStore for mobile
+                return await SecureStore.getItemAsync(key);
+            }
         } catch (error) {
             console.error("Error getting secure item:", error);
             return null;
@@ -24,8 +38,15 @@ class StorageService {
 
     async deleteSecureItem(key) {
         try {
-            await SecureStore.deleteItemAsync(key);
-            return true;
+            if (Platform.OS === 'web') {
+                // Use localStorage for web
+                localStorage.removeItem(`secure_${key}`);
+                return true;
+            } else {
+                // Use SecureStore for mobile
+                await SecureStore.deleteItemAsync(key);
+                return true;
+            }
         } catch (error) {
             console.error("Error deleting secure item:", error);
             return false;
@@ -67,6 +88,15 @@ class StorageService {
     async clear() {
         try {
             await AsyncStorage.clear();
+            if (Platform.OS === 'web') {
+                // Clear localStorage items with secure_ prefix
+                const keys = Object.keys(localStorage);
+                keys.forEach(key => {
+                    if (key.startsWith('secure_')) {
+                        localStorage.removeItem(key);
+                    }
+                });
+            }
             return true;
         } catch (error) {
             console.error("Error clearing storage:", error);
@@ -109,13 +139,6 @@ class StorageService {
 
     async getCachedTransactions() {
         return await this.getItem("cachedTransactions");
-    }
-
-    async clearCache() {
-        const keys = ["cachedTransactions"];
-        const promises = keys.map((key) => this.removeItem(key));
-        const results = await Promise.all(promises);
-        return results.every((result) => result === true);
     }
 }
 

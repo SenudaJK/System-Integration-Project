@@ -1,10 +1,44 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
+import { Platform } from "react-native";
 import * as SecureStore from "expo-secure-store";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { apiService } from "../services/apiService";
 import { CommonActions } from "@react-navigation/native";
 
 const AuthContext = createContext({});
+
+// Platform-specific secure storage wrapper
+const secureStorage = {
+    async setItem(key, value) {
+        if (Platform.OS === 'web') {
+            // Use localStorage for web
+            localStorage.setItem(key, value);
+        } else {
+            // Use SecureStore for mobile
+            await SecureStore.setItemAsync(key, value);
+        }
+    },
+
+    async getItem(key) {
+        if (Platform.OS === 'web') {
+            // Use localStorage for web
+            return localStorage.getItem(key);
+        } else {
+            // Use SecureStore for mobile
+            return await SecureStore.getItemAsync(key);
+        }
+    },
+
+    async removeItem(key) {
+        if (Platform.OS === 'web') {
+            // Use localStorage for web
+            localStorage.removeItem(key);
+        } else {
+            // Use SecureStore for mobile
+            await SecureStore.deleteItemAsync(key);
+        }
+    }
+};
 
 export const useAuth = () => {
     const context = useContext(AuthContext);
@@ -34,7 +68,7 @@ export const AuthProvider = ({ children }) => {
 
     const checkAuthState = async () => {
         try {
-            const storedToken = await SecureStore.getItemAsync("authToken");
+            const storedToken = await secureStorage.getItem("authToken");
             const storedUser = await AsyncStorage.getItem("user");
 
             if (storedToken && storedUser) {
@@ -71,7 +105,7 @@ export const AuthProvider = ({ children }) => {
             const { token: authToken, user: userData } = mockResponse.data;
 
             // Store token securely
-            await SecureStore.setItemAsync("authToken", authToken);
+            await secureStorage.setItem("authToken", authToken);
             await AsyncStorage.setItem("user", JSON.stringify(userData));
 
             setToken(authToken);
@@ -91,7 +125,7 @@ export const AuthProvider = ({ children }) => {
 
     const logout = async () => {
         try {
-            await SecureStore.deleteItemAsync("authToken");
+            await secureStorage.removeItem("authToken");
             await AsyncStorage.removeItem("user");
             setToken(null);
             setUser(null);

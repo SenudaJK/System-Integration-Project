@@ -21,6 +21,7 @@ import Animated, {
 } from "react-native-reanimated";
 import { useAuth } from "../contexts/Authcontext";
 import { useLoading } from "../contexts/Loadingcontext";
+import { validateEmail, validatePassword, getValidationErrorMessage } from "../utils/validation";
 
 const { width, height } = Dimensions.get("window");
 
@@ -59,16 +60,19 @@ export default function LoginScreen({ navigation }) {
     const validateForm = () => {
         const newErrors = {};
 
+        // Email validation
         if (!email.trim()) {
             newErrors.email = "Email is required";
-        } else if (!/\S+@\S+\.\S+/.test(email)) {
-            newErrors.email = "Email is invalid";
+        } else if (!validateEmail(email.trim())) {
+            newErrors.email = "Please enter a valid email address";
         }
 
+        // Password validation
         if (!password.trim()) {
             newErrors.password = "Password is required";
-        } else if (password.length < 6) {
-            newErrors.password = "Password must be at least 6 characters";
+        } else if (!validatePassword(password.trim())) {
+            newErrors.password = getValidationErrorMessage('password', password.trim()) ||
+                "Password must be 8+ characters with uppercase, lowercase, digit, and special character";
         }
 
         setErrors(newErrors);
@@ -182,6 +186,16 @@ export default function LoginScreen({ navigation }) {
                                     {errors.password}
                                 </Text>
                             )}
+
+                            {/* Password Requirements */}
+                            <View style={styles.passwordRequirements}>
+                                <Text style={styles.requirementsTitle}>Password must contain:</Text>
+                                <Text style={styles.requirementItem}>• At least 8 characters</Text>
+                                <Text style={styles.requirementItem}>• One uppercase letter (A-Z)</Text>
+                                <Text style={styles.requirementItem}>• One lowercase letter (a-z)</Text>
+                                <Text style={styles.requirementItem}>• One digit (0-9)</Text>
+                                <Text style={styles.requirementItem}>• One special character (!@#$%^&*)</Text>
+                            </View>
 
                             {/* Login Button */}
                             <TouchableOpacity
@@ -301,6 +315,24 @@ const styles = StyleSheet.create({
         fontSize: 12,
         marginBottom: 10,
         marginLeft: 5,
+    },
+    passwordRequirements: {
+        backgroundColor: "#f5f5f5",
+        padding: 15,
+        borderRadius: 8,
+        marginBottom: 15,
+        marginTop: 10,
+    },
+    requirementsTitle: {
+        fontSize: 12,
+        fontWeight: "bold",
+        color: "#333",
+        marginBottom: 5,
+    },
+    requirementItem: {
+        fontSize: 11,
+        color: "#666",
+        lineHeight: 16,
     },
     loginButton: {
         marginTop: 20,

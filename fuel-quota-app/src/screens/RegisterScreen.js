@@ -14,6 +14,13 @@ import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons } from "@expo/vector-icons";
 import { useAuth } from "../contexts/Authcontext";
 import { useLoading } from "../contexts/Loadingcontext";
+import {
+    validateEmail,
+    validatePhone,
+    validatePassword,
+    validateName,
+    getValidationErrorMessage
+} from "../utils/validation";
 
 export default function RegisterScreen({ navigation }) {
     const [formData, setFormData] = useState({
@@ -37,31 +44,58 @@ export default function RegisterScreen({ navigation }) {
     const validateForm = () => {
         const newErrors = {};
 
-        if (!formData.firstName.trim())
+        // First name validation
+        if (!formData.firstName.trim()) {
             newErrors.firstName = "First name is required";
-        if (!formData.lastName.trim())
+        } else if (!validateName(formData.firstName.trim())) {
+            newErrors.firstName = getValidationErrorMessage('firstName', formData.firstName.trim());
+        }
+
+        // Last name validation
+        if (!formData.lastName.trim()) {
             newErrors.lastName = "Last name is required";
+        } else if (!validateName(formData.lastName.trim())) {
+            newErrors.lastName = getValidationErrorMessage('lastName', formData.lastName.trim());
+        }
+
+        // Email validation
         if (!formData.email.trim()) {
             newErrors.email = "Email is required";
-        } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-            newErrors.email = "Email is invalid";
+        } else if (!validateEmail(formData.email.trim())) {
+            newErrors.email = "Please enter a valid email address";
         }
-        if (!formData.phone.trim())
+
+        // Phone validation
+        if (!formData.phone.trim()) {
             newErrors.phone = "Phone number is required";
+        } else if (!validatePhone(formData.phone.trim())) {
+            newErrors.phone = getValidationErrorMessage('phone', formData.phone.trim());
+        }
+
+        // Password validation
         if (!formData.password.trim()) {
             newErrors.password = "Password is required";
-        } else if (formData.password.length < 6) {
-            newErrors.password = "Password must be at least 6 characters";
+        } else if (!validatePassword(formData.password.trim())) {
+            newErrors.password = getValidationErrorMessage('password', formData.password.trim());
         }
+
+        // Confirm password validation
         if (formData.password !== formData.confirmPassword) {
             newErrors.confirmPassword = "Passwords do not match";
         }
-        if (!formData.stationName.trim())
+
+        // Station information validation
+        if (!formData.stationName.trim()) {
             newErrors.stationName = "Station name is required";
-        if (!formData.stationAddress.trim())
+        }
+
+        if (!formData.stationAddress.trim()) {
             newErrors.stationAddress = "Station address is required";
-        if (!formData.licenseNumber.trim())
+        }
+
+        if (!formData.licenseNumber.trim()) {
             newErrors.licenseNumber = "License number is required";
+        }
 
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
@@ -221,6 +255,16 @@ export default function RegisterScreen({ navigation }) {
 
                         {/* Password Section */}
                         <Text style={styles.sectionTitle}>Security</Text>
+
+                        {/* Password Requirements */}
+                        <View style={styles.passwordRequirements}>
+                            <Text style={styles.requirementsTitle}>Password must contain:</Text>
+                            <Text style={styles.requirementItem}>• At least 8 characters</Text>
+                            <Text style={styles.requirementItem}>• One uppercase letter (A-Z)</Text>
+                            <Text style={styles.requirementItem}>• One lowercase letter (a-z)</Text>
+                            <Text style={styles.requirementItem}>• One digit (0-9)</Text>
+                            <Text style={styles.requirementItem}>• One special character (!@#$%^&*)</Text>
+                        </View>
 
                         <View style={styles.inputContainer}>
                             <Ionicons
