@@ -10,7 +10,7 @@ import lombok.Data;
 public class OwnerRegistrationDto {
 
     @NotBlank(message = "NIC is required")
-   // @Pattern(regexp = "^\\d{9}[vVxX]$|^\\d{12}$", message = "NIC must be a valid Sri Lankan NIC number")
+    @Pattern(regexp = "^\\d{9}[vVxX]$|^\\d{12}$", message = "NIC must be a valid Sri Lankan NIC number")
     private String nic;
 
     @NotBlank(message = "First name is required")
