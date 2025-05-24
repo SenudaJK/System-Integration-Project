@@ -26,39 +26,39 @@ public class OwnerRegistrationController {
 
     
 
-    @PostMapping("/request-qr-link")
-    public ResponseEntity<?> requestQrGenerationLink(@RequestParam String email) {
-        try {
-            ownerService.sendQrGenerationLink(email);
+    // @PostMapping("/request-qr-link")
+    // public ResponseEntity<?> requestQrGenerationLink(@RequestParam String email) {
+    //     try {
+    //         ownerService.sendQrGenerationLink(email);
 
-            Map<String, String> response = new HashMap<>();
-            response.put("message", "QR generation link sent to your email");
-            return ResponseEntity.ok(response);
-        } catch (Exception e) {
-            Map<String, String> errorResponse = new HashMap<>();
-            errorResponse.put("error", e.getMessage());
-            return ResponseEntity.badRequest().body(errorResponse);
-        }
-    }
+    //         Map<String, String> response = new HashMap<>();
+    //         response.put("message", "QR generation link sent to your email");
+    //         return ResponseEntity.ok(response);
+    //     } catch (Exception e) {
+    //         Map<String, String> errorResponse = new HashMap<>();
+    //         errorResponse.put("error", e.getMessage());
+    //         return ResponseEntity.badRequest().body(errorResponse);
+    //     }
+    // }
 
-    @PostMapping("/generate-qr")
-    public ResponseEntity<?> generateQrCode(@Valid @RequestBody OtpVerificationDto verificationDto) {
-        try {
-            String qrCodeBase64 = ownerService.generateQrCode(
-                    verificationDto.getEmail(),
-                    verificationDto.getOtp());
+    // @PostMapping("/generate-qr")
+    // public ResponseEntity<?> generateQrCode(@Valid @RequestBody OtpVerificationDto verificationDto) {
+    //     try {
+    //         String qrCodeBase64 = ownerService.generateQrCode(
+    //                 verificationDto.getEmail(),
+    //                 verificationDto.getOtp());
 
-            Map<String, Object> response = new HashMap<>();
-            response.put("qrCode", qrCodeBase64);
-            response.put("message", "QR code generated successfully");
+    //         Map<String, Object> response = new HashMap<>();
+    //         response.put("qrCode", qrCodeBase64);
+    //         response.put("message", "QR code generated successfully");
 
-            return ResponseEntity.ok(response);
-        } catch (Exception e) {
-            Map<String, String> errorResponse = new HashMap<>();
-            errorResponse.put("error", e.getMessage());
-            return ResponseEntity.badRequest().body(errorResponse);
-        }
-    }
+    //         return ResponseEntity.ok(response);
+    //     } catch (Exception e) {
+    //         Map<String, String> errorResponse = new HashMap<>();
+    //         errorResponse.put("error", e.getMessage());
+    //         return ResponseEntity.badRequest().body(errorResponse);
+    //     }
+    // }
 
     @CrossOrigin(origins = "http://localhost:5173")
     @PostMapping("/send-otp") /* */

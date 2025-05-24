@@ -10,6 +10,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.Base64;
 
+          /* */
 public class QRCodeGenerator {
 
     public static String generateQRCode(String data, int width, int height) throws WriterException, IOException {
