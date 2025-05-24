@@ -2,11 +2,14 @@ package com.fuelquota.management.service;
 
 import com.fuelquota.management.dto.OrderDTO;
 import com.fuelquota.management.model.Order;
+import com.fuelquota.management.model.FuelStation;
 import com.fuelquota.management.model.FuelType;
 import com.fuelquota.management.repository.OrderRepository;
+import com.fuelquota.management.repository.FuelStationRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import jakarta.persistence.EntityNotFoundException;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -17,6 +20,9 @@ public class OrderService {
     @Autowired
     private OrderRepository orderRepository;
 
+    @Autowired
+    private FuelStationRepository fuelStationRepository;
+
     public OrderDTO createOrder(OrderDTO orderDTO) {
         if (orderDTO.getOrderAmount() <= 0) {
             throw new IllegalArgumentException("Order amount must be positive");
@@ -26,6 +32,12 @@ public class OrderService {
             order.setOrderDate(LocalDate.parse(orderDTO.getOrderDate()));
             order.setOrderAmount(orderDTO.getOrderAmount());
             order.setFuelType(FuelType.valueOf(orderDTO.getFuelType()));
+
+            // Associate the order with the FuelStation
+            FuelStation fuelStation = fuelStationRepository.findById(orderDTO.getFuelStationId())
+                    .orElseThrow(() -> new EntityNotFoundException("Fuel station not found with id: " + orderDTO.getFuelStationId()));
+            order.setFuelStation(fuelStation);
+
             Order savedOrder = orderRepository.save(order);
             return convertToDTO(savedOrder);
         } catch (IllegalArgumentException e) {
@@ -49,6 +61,7 @@ public class OrderService {
         dto.setOrderDate(order.getOrderDate().toString());
         dto.setOrderAmount(order.getOrderAmount());
         dto.setFuelType(order.getFuelType().toString());
+        dto.setFuelStationId(order.getFuelStation() != null ? order.getFuelStation().getId() : null);
         return dto;
     }
 }
