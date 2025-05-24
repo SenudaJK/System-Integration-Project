@@ -7,6 +7,7 @@ import jakarta.validation.constraints.Size;
 import lombok.Data;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @Data
@@ -47,4 +48,7 @@ public class FuelStation {
     public void prePersist() {
         createdAt = LocalDateTime.now();
     }
+
+    @OneToMany(mappedBy = "fuelStation", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Order> orders;
 }

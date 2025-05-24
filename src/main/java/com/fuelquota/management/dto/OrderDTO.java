@@ -8,4 +8,5 @@ public class OrderDTO {
     private String orderDate;
     private Double orderAmount;
     private String fuelType;
+    private Long fuelStationId; // New field to associate with FuelStation
 }

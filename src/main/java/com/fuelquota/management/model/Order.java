@@ -21,4 +21,8 @@ public class Order {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private FuelType fuelType;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "fuel_station_id", nullable = false)
+    private FuelStation fuelStation;
 }
