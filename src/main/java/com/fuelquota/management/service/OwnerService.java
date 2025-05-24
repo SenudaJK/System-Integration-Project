@@ -20,8 +20,6 @@ public class OwnerService {
     private final OwnerRepository ownerRepository;
     private final OtpService otpService;
     private final OtpRepository otpRepository;
-    private final TrafficDepartmentService trafficDepartmentService;
-    private final EmailService emailService;
     private final QrCodeService qrCodeService;
 
     @Transactional //check email exist
@@ -70,15 +68,13 @@ public class OwnerService {
     @Transactional
     public boolean verifyEmail(String email, String otp) {
         // Verify the OTP using the OtpRecord table
-        boolean verified = otpService.verifyOtp(email, otp, OtpRecord.OtpPurpose.EMAIL_VERIFICATION);
-
-        if (verified) {
+        boolean verified = otpService.verifyOtp(email, otp, OtpRecord.OtpPurpose.EMAIL_VERIFICATION);        if (verified) {
             // Fetch the OtpRecord to confirm the email exists in the OtpRecord table
-            OtpRecord otpRecord = otpRepository.findByEmailAndPurpose(email, OtpRecord.OtpPurpose.EMAIL_VERIFICATION)
+            otpRepository.findByEmailAndPurpose(email, OtpRecord.OtpPurpose.EMAIL_VERIFICATION)
                     .orElseThrow(() -> new IllegalArgumentException("No OTP record found for the provided email"));
 
             // Check if an Owner already exists with this email
-            Optional<Owner> existingOwner = ownerRepository.findByEmail(email);
+            ownerRepository.findByEmail(email);
 
             
         }
@@ -89,11 +85,9 @@ public class OwnerService {
     @Transactional
     public boolean verifyEmailForLogin(String email, String otp) {
         // Verify the OTP using the OtpRecord table
-        boolean verified = otpService.verifyOtp(email, otp, OtpRecord.OtpPurpose.LOGIN_VERIFICATION);
-
-        if (verified) {
+        boolean verified = otpService.verifyOtp(email, otp, OtpRecord.OtpPurpose.LOGIN_VERIFICATION);        if (verified) {
             // Fetch the OtpRecord to confirm the email exists in the OtpRecord table
-            OtpRecord otpRecord = otpRepository.findByEmailAndPurpose(email, OtpRecord.OtpPurpose.LOGIN_VERIFICATION)
+            otpRepository.findByEmailAndPurpose(email, OtpRecord.OtpPurpose.LOGIN_VERIFICATION)
                     .orElseThrow(() -> new IllegalArgumentException("No OTP record found for the provided email"));
    
         }
