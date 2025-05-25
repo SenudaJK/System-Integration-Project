@@ -3,7 +3,7 @@
  */
 
 // Make sure this matches exactly with your backend URL
-const API_BASE_URL = 'http://localhost:8080/api';
+const API_BASE_URL = 'http://localhost:8082/api';
 
 // Define the VehicleType type
 export type VehicleType = {
@@ -16,11 +16,24 @@ export type VehicleType = {
   updatedAt: string;
 };
 
+// Define the FuelOrder type based on GET /api/orders response
+export type FuelOrder = {
+  orderId: number;
+  orderDate: string;
+  orderAmount: number;
+  fuelType: string;
+  fuelStationId: number;
+  ownerName: string;
+  stationName: string;
+  location: string;
+  contactNumber: string;
+};
+
 // Helper function to append JWT token to requests
 const getAuthHeaders = () => {
   const token = localStorage.getItem('token');
   const tokenType = localStorage.getItem('token_type') || 'Bearer';
-  
+
   return {
     'Content-Type': 'application/json',
     ...(token ? { Authorization: `${tokenType} ${token}` } : {})
@@ -29,28 +42,28 @@ const getAuthHeaders = () => {
 
 // Generic fetch wrapper with error handling
 async function fetchWithAuth<T>(
-  endpoint: string, 
-  options: RequestInit = {}
+    endpoint: string,
+    options: RequestInit = {}
 ): Promise<T> {
   const headers = {
     ...getAuthHeaders(),
     ...(options.headers || {})
   };
-  
+
   try {
     const response = await fetch(`${API_BASE_URL}${endpoint}`, {
       ...options,
       headers
     });
-    
+
     // Log the response for debugging
     console.log(`API Response (${endpoint}):`, response.status);
-    
+
     if (!response.ok) {
       // Try to parse error message from response
       const errorText = await response.text();
       let errorMessage = `API error: ${response.status}`;
-      
+
       try {
         const errorData = JSON.parse(errorText);
         errorMessage = errorData.message || errorMessage;
@@ -58,10 +71,10 @@ async function fetchWithAuth<T>(
         // If parsing fails, use the text directly
         if (errorText) errorMessage = errorText;
       }
-      
+
       throw new Error(errorMessage);
     }
-    
+
     // Check if the response is empty
     const contentType = response.headers.get('content-type');
     if (!contentType || contentType.indexOf('application/json') === -1) {
@@ -69,7 +82,7 @@ async function fetchWithAuth<T>(
       const text = await response.text();
       return { message: text } as unknown as T;
     }
-    
+
     // Otherwise, parse as JSON
     return await response.json();
   } catch (error) {
@@ -80,70 +93,72 @@ async function fetchWithAuth<T>(
 
 // Authentication API
 export const authApi = {
-  login: (username: string, password: string) => 
-    fetchWithAuth('/auth/login', {
-      method: 'POST',
-      body: JSON.stringify({ username, password })
-    }),
-    
-  register: (userData: { username: string, fullName: string, email: string, password: string, roles: string[] }) => 
-    fetchWithAuth('/auth/register', {
-      method: 'POST',
-      body: JSON.stringify(userData)
-    }),
-    
+  login: (username: string, password: string) =>
+      fetchWithAuth('/auth/login', {
+        method: 'POST',
+        body: JSON.stringify({ username, password })
+      }),
+
+  register: (userData: { username: string, fullName: string, email: string, password: string, roles: string[] }) =>
+      fetchWithAuth('/auth/register', {
+        method: 'POST',
+        body: JSON.stringify(userData)
+      }),
+
   getCurrentUser: () => fetchWithAuth('/auth/me'),
-  
+
   validateToken: () => fetchWithAuth('/auth/validate')
 };
 
 // Admin API
 export const adminApi = {
-  getFuelStations: () => 
-    fetchWithAuth('/admin/fuel-stations'),
-    
-  getTransactions: () => 
-    fetchWithAuth('/admin/transactions'),
-    
-  approveStation: (stationId: string) => 
-    fetchWithAuth(`/admin/fuel-stations/${stationId}/approve`, {
-      method: 'PUT' // Changed from POST to PUT to match backend
-    }),
-    
-  deactivateStation: (stationId: string) => 
-    fetchWithAuth(`/admin/fuel-stations/${stationId}/deactivate`, {
-      method: 'PUT' // Changed from POST to PUT to match backend
-    }),
-    
-  addFuelStation: (stationData: Omit<FuelStation, 'id' | 'status' | 'createdAt'>) => 
-    fetchWithAuth('/admin/fuel-stations', {
-      method: 'POST',
-      body: JSON.stringify(stationData)
-    }),
-    
+  getFuelStations: () =>
+      fetchWithAuth('/admin/fuel-stations'),
+
+  getTransactions: () =>
+      fetchWithAuth('/admin/transactions'),
+
+  approveStation: (stationId: string) =>
+      fetchWithAuth(`/admin/fuel-stations/${stationId}/approve`, {
+        method: 'PUT' // Changed from POST to PUT to match backend
+      }),
+
+  deactivateStation: (stationId: string) =>
+      fetchWithAuth(`/admin/fuel-stations/${stationId}/deactivate`, {
+        method: 'PUT' // Changed from POST to PUT to match backend
+      }),
+
+  addFuelStation: (stationData: Omit<FuelStation, 'id' | 'status' | 'createdAt'>) =>
+      fetchWithAuth('/admin/fuel-stations', {
+        method: 'POST',
+        body: JSON.stringify(stationData)
+      }),
+
+  // Removed getRecentOrders and getOrderDetails since we're using /orders
+
   // Vehicle Type Management
-  getVehicleTypes: () => 
-    fetchWithAuth('/vehicle-types'),
-    
-  getVehicleType: (id: number) => 
-    fetchWithAuth(`/vehicle-types/${id}`),
-    
-  createVehicleType: (vehicleTypeData: Omit<VehicleType, 'id'>) => 
-    fetchWithAuth('/vehicle-types', {
-      method: 'POST',
-      body: JSON.stringify(vehicleTypeData)
-    }),
-    
-  updateVehicleType: (id: number, vehicleTypeData: Omit<VehicleType, 'id'>) => 
-    fetchWithAuth(`/vehicle-types/${id}`, {
-      method: 'PUT',
-      body: JSON.stringify(vehicleTypeData)
-    }),
-    
-  deleteVehicleType: (id: number) => 
-    fetchWithAuth(`/vehicle-types/${id}`, {
-      method: 'DELETE'
-    })
+  getVehicleTypes: () =>
+      fetchWithAuth('/vehicle-types'),
+
+  getVehicleType: (id: number) =>
+      fetchWithAuth(`/vehicle-types/${id}`),
+
+  createVehicleType: (vehicleTypeData: Omit<VehicleType, 'id'>) =>
+      fetchWithAuth('/vehicle-types', {
+        method: 'POST',
+        body: JSON.stringify(vehicleTypeData)
+      }),
+
+  updateVehicleType: (id: number, vehicleTypeData: Omit<VehicleType, 'id'>) =>
+      fetchWithAuth(`/vehicle-types/${id}`, {
+        method: 'PUT',
+        body: JSON.stringify(vehicleTypeData)
+      }),
+
+  deleteVehicleType: (id: number) =>
+      fetchWithAuth(`/vehicle-types/${id}`, {
+        method: 'DELETE'
+      })
 };
 
 // Define the Vehicle type
@@ -154,7 +169,7 @@ export type Vehicle = {
 };
 
 export type FuelStation = {
-  id: number; 
+  id: number;
   name: string;
   location: string;
   ownerName: string;
@@ -179,45 +194,45 @@ export type FuelDistribution = {
 };
 
 export const userApi = {
-  getVehicles: () => 
-    fetchWithAuth('/user/vehicles'),
-    
-  addVehicle: (vehicleData: Omit<Vehicle, 'id' | 'remainingQuota'>) => 
-    fetchWithAuth('/user/vehicles', {
-      method: 'POST',
-      body: JSON.stringify(vehicleData)
-    }),
-    
-  getQuota: (vehicleId: string) => 
-    fetchWithAuth(`/user/vehicles/${vehicleId}/quota`),
-    
-  requestQuota: (vehicleId: string, amount: number) => 
-    fetchWithAuth(`/user/vehicles/${vehicleId}/request-quota`, {
-      method: 'POST',
-      body: JSON.stringify({ amount })
-    })
+  getVehicles: () =>
+      fetchWithAuth('/user/vehicles'),
+
+  addVehicle: (vehicleData: Omit<Vehicle, 'id' | 'remainingQuota'>) =>
+      fetchWithAuth('/user/vehicles', {
+        method: 'POST',
+        body: JSON.stringify(vehicleData)
+      }),
+
+  getQuota: (vehicleId: string) =>
+      fetchWithAuth(`/user/vehicles/${vehicleId}/quota`),
+
+  requestQuota: (vehicleId: string, amount: number) =>
+      fetchWithAuth(`/user/vehicles/${vehicleId}/request-quota`, {
+        method: 'POST',
+        body: JSON.stringify({ amount })
+      })
 };
 
 // Station Manager API
 export const stationApi = {
-  getStationDetails: () => 
-    fetchWithAuth('/station/details'),
-    
+  getStationDetails: () =>
+      fetchWithAuth('/station/details'),
+
   recordTransaction: (transaction: {
     vehicleId: string,
     amount: number,
     fuelType: string
-  }) => 
-    fetchWithAuth('/station/record-transaction', {
-      method: 'POST',
-      body: JSON.stringify(transaction)
-    }),
-    
-  getDailyTransactions: () => 
-    fetchWithAuth('/station/transactions/daily'),
-    
-  validateVehicle: (registrationNumber: string) => 
-    fetchWithAuth(`/station/vehicle/validate?registrationNumber=${registrationNumber}`)
+  }) =>
+      fetchWithAuth('/station/record-transaction', {
+        method: 'POST',
+        body: JSON.stringify(transaction)
+      }),
+
+  getDailyTransactions: () =>
+      fetchWithAuth('/station/transactions/daily'),
+
+  validateVehicle: (registrationNumber: string) =>
+      fetchWithAuth(`/station/vehicle/validate?registrationNumber=${registrationNumber}`)
 };
 
 export type CreateDistributionRequest = {
@@ -228,17 +243,17 @@ export type CreateDistributionRequest = {
 };
 
 export const distributionApi = {
-  createDistribution: (distributionData: CreateDistributionRequest) => 
-    fetchWithAuth<FuelDistribution>('/fuel-distributions', {
-      method: 'POST',
-      body: JSON.stringify(distributionData)
-    }),
+  createDistribution: (distributionData: CreateDistributionRequest) =>
+      fetchWithAuth<FuelDistribution>('/fuel-distributions', {
+        method: 'POST',
+        body: JSON.stringify(distributionData)
+      }),
 
-  updateDistributionStatus: (id: number, status: string) => 
-  fetchWithAuth<FuelDistribution>(`/fuel-distributions/${id}/status?status=${status}`, {
-    method: 'PUT'
-  }),
+  updateDistributionStatus: (id: number, status: string) =>
+      fetchWithAuth<FuelDistribution>(`/fuel-distributions/${id}/status?status=${status}`, {
+        method: 'PUT'
+      }),
 
-  getRecentDistributions: (limit: number = 10) => 
-    fetchWithAuth<FuelDistribution[]>(`/fuel-distributions/recent?limit=${limit}`)
+  getRecentDistributions: (limit: number = 10) =>
+      fetchWithAuth<FuelDistribution[]>(`/fuel-distributions/recent?limit=${limit}`)
 };
