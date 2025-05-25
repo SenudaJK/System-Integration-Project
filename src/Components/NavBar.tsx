@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { LogOut, Menu, X, Home, Package, Settings, User } from 'lucide-react';
+import { LogOut, Home, Package, Settings, User } from 'lucide-react';
 import axios from 'axios';
 
 const NavBar: React.FC = () => {
@@ -61,6 +61,13 @@ const NavBar: React.FC = () => {
                         </Link>
                     </div>
                     <div className="mt-6 space-y-2">
+                        <button
+                            onClick={toggleMobileMenu}
+                            className="flex items-center px-4 py-2 text-sm font-semibold hover:bg-blue-700 rounded-md transition duration-200 sm:hidden"
+                        >
+                            <Home className="h-5 w-5 mr-3" />
+                            Toggle Menu
+                        </button>
                         <Link
                             to="/dashboard"
                             className="flex items-center px-4 py-2 text-sm font-semibold hover:bg-blue-700 rounded-md transition duration-200"

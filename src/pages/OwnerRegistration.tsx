@@ -73,7 +73,7 @@ const OwnerRegistration: React.FC = () => {
                 password: formData.password || '', // Ensure password is always a string
                 active: false,
             });
-            setSuccessMessage('Fuel station registered successfully! Awaiting approval.');
+            setSuccessMessage('Fuel station registered successfully! Go back to login.');
             setFormData({ name: '', location: '', ownerName: '', contactNumber: '', password: '' });
         } catch (error: any) {
             if (error.response?.status === 400) {

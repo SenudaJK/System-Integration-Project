@@ -13,7 +13,6 @@ const Dashboard: React.FC = () => {
     const [inventory, setInventory] = useState<InventoryItem[]>([]);
     const [orders, setOrders] = useState<any[]>([]);
     const [fuelStationId, setFuelStationId] = useState<number | null>(null);
-    console.log('Fuel Station ID:', fuelStationId); // Temporarily log the ID to use the variable
     const [error, setError] = useState('');
     const fuelTypes = ['PETROL_92', 'PETROL_95', 'DIESEL', 'SUPER_DIESEL', 'KEROSENE'];
 
