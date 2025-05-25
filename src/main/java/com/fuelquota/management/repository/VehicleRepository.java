@@ -16,4 +16,5 @@ public interface VehicleRepository extends JpaRepository<Vehicle, Long> {
     List<Vehicle> findByOwnerNic(String ownerNic);
     List<Vehicle> findByOwnerId(Long ownerId);
     Optional<Vehicle> findByQrCode(String qrCode);
+    
 }

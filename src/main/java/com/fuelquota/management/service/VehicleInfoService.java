@@ -16,9 +16,12 @@ public class VehicleInfoService {
     }
 
     @Transactional(readOnly = true)
-    public VehicleInfoDTO getInfoByQrCode(String qrCode) {
-        Vehicle vehicle = vehicleRepository.findByQrCode(qrCode)
-                .orElseThrow(() -> new IllegalArgumentException("Invalid QR code: " + qrCode));
+    public VehicleInfoDTO getInfoByQrCode(String decodedQrText) {
+        // Example: Vehicle Number: BGQ-6375\n...
+        String vehicleNumber = extractVehicleNumber(decodedQrText);
+
+        Vehicle vehicle = vehicleRepository.findByVehicleNumber(vehicleNumber)
+                .orElseThrow(() -> new IllegalArgumentException("Vehicle not found for number: " + vehicleNumber));
 
         OwnerDTO ownerDTO = new OwnerDTO(
                 vehicle.getOwner().getId(),
@@ -30,7 +33,7 @@ public class VehicleInfoService {
                 vehicle.getOwner().getAddress()
         );
 
-        VehicleInfoDTO dto = new VehicleInfoDTO(
+        return new VehicleInfoDTO(
                 vehicle.getId(),
                 vehicle.getVehicleNumber(),
                 vehicle.getChassisNumber(),
@@ -40,6 +43,16 @@ public class VehicleInfoService {
                 vehicle.getVehicleType().getName(),
                 ownerDTO
         );
-        return dto;
     }
+
+    private String extractVehicleNumber(String text) {
+        // Pattern: "Vehicle Number: BGQ-6375"
+        for (String line : text.split("\\n")) {
+            if (line.startsWith("Vehicle Number:")) {
+                return line.replace("Vehicle Number:", "").trim();
+            }
+        }
+        throw new IllegalArgumentException("Vehicle number not found in QR text");
+    }
+
 }

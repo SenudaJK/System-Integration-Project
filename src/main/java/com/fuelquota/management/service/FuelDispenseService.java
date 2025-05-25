@@ -18,8 +18,11 @@ public class FuelDispenseService {
 
     @Transactional
     public VehicleInfoDTO dispenseFuel(PumpFuelRequest request) {
-        Vehicle vehicle = vehicleRepository.findByQrCode(request.getQrCode())
-                .orElseThrow(() -> new IllegalArgumentException("Invalid QR code: " + request.getQrCode()));
+        String qrText = request.getQrCode();
+        String vehicleNumber = extractVehicleNumber(qrText);
+
+        Vehicle vehicle = vehicleRepository.findByVehicleNumber(vehicleNumber)
+                .orElseThrow(() -> new IllegalArgumentException("Vehicle not found for number: " + vehicleNumber));
 
         if (!vehicle.canDispenseFuel(request.getAmount())) {
             throw new IllegalArgumentException("Insufficient available quota");
@@ -30,6 +33,16 @@ public class FuelDispenseService {
 
         return VehicleInfoMapper.toDto(vehicle);
     }
+
+    private String extractVehicleNumber(String text) {
+        for (String line : text.split("\\n")) {
+            if (line.startsWith("Vehicle Number:")) {
+                return line.replace("Vehicle Number:", "").trim();
+            }
+        }
+        throw new IllegalArgumentException("Vehicle number not found in QR text");
+    }
+
 
 
     public class VehicleInfoMapper {
