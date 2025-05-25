@@ -44,9 +44,9 @@ public class Vehicle {
 
     // Keep the enum for backwards compatibility with existing code that might use it
     public enum VehicleTypeEnum {
-        MOTORCYCLE, THREE_WHEELER, CAR, VAN, BUS, LORRY, TRUCK
+        MOTORCYCLE, THREE_WHEELER, CAR, VAN, BUS, LORRY, TRUCK, HEAVY_VEHICLE
     }    public enum FuelType {
-        DIESEL, KEROSENE, PETROL_92, PETROL_95, SUPER_DIESEL
+        DIESEL, ELECTRIC, KEROSENE, PETROL
     }
 
     // Helper method to get weekly quota from vehicle type

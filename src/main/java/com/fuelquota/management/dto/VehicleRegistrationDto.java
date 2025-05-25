@@ -2,6 +2,7 @@ package com.fuelquota.management.dto;
 
 import com.fuelquota.management.model.Vehicle;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
 @Data
@@ -17,11 +18,13 @@ public class VehicleRegistrationDto {
     private String vehicleType;
 
     // New field for entity-based approach
-    private Long vehicleTypeId;    // Keep for backwards compatibility
+    private Long vehicleTypeId;
+
+    // Keep for backwards compatibility
     private Vehicle.VehicleTypeEnum vehicleTypeEnum;
 
-    @NotBlank(message = "Fuel type is required")
-    private String fuelType;  // Accept as string from API
+    @NotNull(message = "Fuel type is required")
+    private Vehicle.FuelType fuelType;
 
     @NotBlank(message = "Owner NIC is required")
     private String ownerNic;
@@ -46,38 +49,13 @@ public class VehicleRegistrationDto {
     }
 
     // Helper method to get vehicle type name for validation and processing
-    public String getVehicleTypeName() {        if (vehicleType != null && !vehicleType.trim().isEmpty()) {
+    public String getVehicleTypeName() {
+        if (vehicleType != null && !vehicleType.trim().isEmpty()) {
             return vehicleType.trim().toUpperCase();
         } else if (vehicleTypeId != null) {
             return null; // Will be resolved from database
         } else if (vehicleTypeEnum != null) {
             return vehicleTypeEnum.name();
-        }
-        return null;
-    }    // Helper method to get fuel type enum
-    public Vehicle.FuelType getFuelTypeEnum() {
-        if (fuelType != null && !fuelType.trim().isEmpty()) {
-            String upperCaseFuelType = fuelType.trim().toUpperCase();
-            
-            // Handle mapping from user input to database enum values
-            switch (upperCaseFuelType) {
-                case "DIESEL":
-                    return Vehicle.FuelType.DIESEL;
-                case "KEROSENE": 
-                    return Vehicle.FuelType.KEROSENE;
-                case "PETROL":
-                case "PETROL_92":
-                    return Vehicle.FuelType.PETROL_92; // Default petrol to PETROL_92
-                case "PETROL_95":
-                    return Vehicle.FuelType.PETROL_95;
-                case "SUPER_DIESEL":
-                    return Vehicle.FuelType.SUPER_DIESEL;
-                case "ELECTRIC":
-                    // Electric not supported in database, throw exception or default
-                    throw new IllegalArgumentException("ELECTRIC fuel type not supported in current database schema");
-                default:
-                    throw new IllegalArgumentException("Unknown fuel type: " + fuelType + ". Supported: DIESEL, KEROSENE, PETROL_92, PETROL_95, SUPER_DIESEL");
-            }
         }
         return null;
     }
